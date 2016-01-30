@@ -1,0 +1,41 @@
+digraph Dependencies {
+    chkder
+    dogleg
+    dpmpar
+    enorm
+    fdjac1
+    fdjac2
+    hybrd1
+    hybrd
+    hybrj1
+    hybrj
+    lmder1
+    lmder
+    lmdif1
+    lmdif
+    lmpar
+    lmstr1
+    lmstr
+    qform
+    qrfac
+    qrsolv
+    r1mpyq
+    r1updt
+    rwupdt
+
+    hybrd -> qform
+    hybrd -> qrfac
+    hybrd -> dogleg
+    hybrj -> dogleg
+    hybrj -> qrfac
+    lmder -> qrfac
+    lmdif -> qrfac
+    dogleg -> enorm
+    hybrd -> enorm
+    hybrj -> enorm
+    lmder -> enorm
+    lmdif -> enorm
+    lmpar -> enorm
+    lmstr -> enorm
+    qrfac -> enorm
+};

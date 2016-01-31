@@ -1,0 +1,41 @@
+
+Fortran source code (23 files)
+------------------------------
+
+*** zero finding ***
+
+   123 hybrd1.f         -- zero finding (Powell's method); no analytical jacobian; driver
+   459 hybrd.f          -- zero finding (Powell's method); no analytical jacobian; core routine
+   127 hybrj1.f         -- zero finding (Powell's method); analytical jacobian; driver
+   440 hybrj.f          -- zero finding (Powell's method); analytical jacobian; core routine
+
+*** non-linear least-squares ***
+
+   135 lmdif1.f         -- nonlinear least squares (Levenberg-Marquardt); no analytical jacobian; driver
+   454 lmdif.f          -- nonlinear least squares (Levenberg-Marquardt); no analytical jacobian; core routine
+   156 lmder1.f         -- nonlinear least squares (Levenberg-Marquardt); analytical jacobian; driver
+   452 lmder.f          -- nonlinear least squares (Levenberg-Marquardt); analytical jacobian; core routine
+   156 lmstr1.f         -- nonlinear least squares (Levenberg-Marquardt); analytical jacobian (one row per call for limited storage); driver
+   466 lmstr.f          -- nonlinear least squares (Levenberg-Marquardt); analytical jacobian (one row per call for limited storage); core routine
+
+*** check derivatives ***
+
+   140 chkder.f         -- check analytical jacobian vs numberical jacobian
+
+*** machine dependent constants ***
+
+   177 dpmpar.f         -- double-precision machine-dependent constants
+
+*** miscellaneous routines ***
+
+   177 dogleg.f         -- determine combination of Gauss-Newton and scaled-gradient directions.
+   108 enorm.f          -- determine euclidean norm of a vector
+   151 fdjac1.f         -- finite-difference approximation of Jacobian of n functions in n variables
+   107 fdjac2.f         -- finite-difference approximation of Jacobian of m functions in n variables
+   264 lmpar.f          -- solve some LM problem
+    95 qform.f          -- QR factorization to Q matrix
+   164 qrfac.f          -- Compute QR factorization of rectangular matrix using Housholder transformations
+   193 qrsolv.f         -- Solve least-squares problem
+   113 rwupdt.f         -- Update QR decomposition (upper triangular part)
+    92 r1mpyq.f         -- Multiply matrix by orthogonal matrix
+   207 r1updt.f         -- Update QR decomposition (lower triangular part)

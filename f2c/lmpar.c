@@ -13,11 +13,7 @@
 #include <math.h>
 #include "minpack_c.h"
 
-/* Table of constant values */
-
-static integer c__2 = 2;
-
-int lmpar(
+void lmpar(
         const integer n,
         doublereal *r__,
         const integer ldr,
@@ -41,9 +37,6 @@ int lmpar(
     /* System generated locals */
     integer r_dim1, r_offset, i__1, i__2;
     doublereal d__1, d__2;
-
-    /* Builtin functions */
-    double sqrt(doublereal);
 
     /* Local variables */
     static integer i__, j, k, l;
@@ -165,12 +158,12 @@ int lmpar(
 
     /* Function Body */
 
-/*     dwarf is the smallest positive magnitude. */
+    /* dwarf is the smallest positive magnitude. */
 
-    dwarf = dpmpar(&c__2);
+    dwarf = dpmpar_2;
 
-/*     compute and store in x the gauss-newton direction. if the */
-/*     jacobian is rank-deficient, obtain a least squares solution. */
+    /* compute and store in x the gauss-newton direction. if the */
+    /* jacobian is rank-deficient, obtain a least squares solution. */
 
     nsing = n;
     i__1 = n;
@@ -273,6 +266,7 @@ L50:
     }
     temp = enorm(n, &wa1[1]);
     parl = fp / *delta / temp / temp;
+
 L120:
 
     /* calculate an upper bound, paru, for the zero of the function. */
@@ -296,21 +290,22 @@ L120:
         paru = dwarf / fmin(*delta, p1);
     }
 
-/*     if the input par lies outside of the interval (parl,paru), */
-/*     set par to the closer endpoint. */
+    /* if the input par lies outside of the interval (parl,paru), */
+    /* set par to the closer endpoint. */
 
     *par = fmax(*par,parl);
     *par = fmin(*par,paru);
-    if (*par == zero) {
-	*par = gnorm / dxnorm;
+    if (*par == zero)
+    {
+        *par = gnorm / dxnorm;
     }
 
-/*     beginning of an iteration. */
+    /* beginning of an iteration. */
 
 L150:
     ++iter;
 
-/*        evaluate the function at the current value of par. */
+    /* evaluate the function at the current value of par. */
 
     if (*par == zero)
     {
@@ -365,8 +360,7 @@ L150:
             goto L200;
         }
 
-        i__2 = n;
-        for (i__ = jp1; i__ <= i__2; ++i__)
+        for (i__ = jp1; i__ <= n; ++i__)
         {
             wa1[i__] -= r__[i__ + j * r_dim1] * temp;
         }
@@ -408,6 +402,4 @@ L220:
     {
         *par = zero;
     }
-    return 0;
-
 }

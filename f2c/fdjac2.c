@@ -13,40 +13,19 @@
 #include <math.h>
 #include "minpack_c.h"
 
-/* Table of constant values */
-
-static integer c__1 = 1;
-
-int fdjac2(
-        lmdif_fcn  fcn,
-        const integer m,
-        const integer n,
-        doublereal *x,
-        doublereal *fvec,
-        doublereal *fjac,
-        const integer ldfjac,
-        integer    *iflag, 
-        doublereal *epsfcn,
-        doublereal *wa
+void fdjac2(
+        lmdif_fcn         fcn,
+        const integer     m,
+        const integer     n,
+        doublereal       *x,
+        const doublereal *fvec,
+        doublereal       *fjac,
+        const integer     ldfjac,
+        integer          *iflag,
+        const doublereal  epsfcn,
+        doublereal        *wa
     )
 {
-    /* Initialized data */
-
-    static doublereal zero = 0.;
-
-    /* System generated locals */
-    integer fjac_dim1, fjac_offset, i__1, i__2;
-
-    /* Builtin functions */
-    double sqrt(doublereal);
-
-    /* Local variables */
-    static doublereal h__;
-    static integer i__, j;
-    static doublereal eps, temp, epsmch;
-
-    /*     ********** */
-
     /*     subroutine fdjac2 */
 
     /*     this subroutine computes a forward-difference approximation */
@@ -121,45 +100,36 @@ int fdjac2(
 
     /*     ********** */
 
-    /* Parameter adjustments */
-    --wa;
-    --fvec;
-    --x;
-    fjac_dim1 = ldfjac;
-    fjac_offset = 1 + fjac_dim1;
-    fjac -= fjac_offset;
+    // epsmch is the machine precision.
 
-    /* Function Body */
+    const doublereal epsmch = dpmpar_1;
 
-    /* epsmch is the machine precision. */
+    const doublereal eps = sqrt(fmax(epsfcn, epsmch));
 
-    epsmch = dpmpar(&c__1);
-
-    eps = sqrt((fmax(*epsfcn, epsmch)));
-    i__1 = n;
-    for (j = 1; j <= i__1; ++j)
+    for (int j = 0; j < n; ++j)
     {
-        temp = x[j];
-        h__ = eps * fabs(temp);
-        if (h__ == zero)
+        doublereal temp = x[j];
+
+        doublereal h = eps * fabs(temp);
+
+        if (h == 0.0)
         {
-            h__ = eps;
+            h = eps;
         }
-        x[j] = temp + h__;
-        (*fcn)(m, n, &x[1], &wa[1], iflag);
+
+        x[j] = temp + h;
+
+        (*fcn)(m, n, x, wa, iflag);
+
         if (*iflag < 0)
         {
             break;
         }
         x[j] = temp;
-        i__2 = m;
 
-        for (i__ = 1; i__ <= i__2; ++i__)
+        for (int i = 0; i < m; ++i)
         {
-            fjac[i__ + j * fjac_dim1] = (wa[i__] - fvec[i__]) / h__;
+            fjac[i + j * ldfjac] = (wa[i] - fvec[i]) / h;
         }
     }
-
-    return 0;
-
 }

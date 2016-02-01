@@ -12,30 +12,18 @@
 
 #include "minpack_c.h"
 
-int lmdif1(
+void lmdif1(
         lmdif_fcn   fcn,
         const integer m,
         const integer n,
         doublereal *x,
         doublereal *fvec,
-        doublereal *tol,
+        const doublereal tol,
         integer    *info,
         integer    *iwa,
         doublereal *wa,
-        integer    *lwa)
+        const integer lwa)
 {
-    /* Initialized data */
-
-    static doublereal factor = 100.;
-    static doublereal zero = 0.;
-
-    static integer mp5n, mode, nfev;
-    static doublereal ftol, gtol, xtol;
-    static doublereal epsfcn;
-    static integer maxfev, nprint;
-
-    /*     ********** */
-
     /*     subroutine lmdif1 */
 
     /*     the purpose of lmdif1 is to minimize the sum of the squares of */
@@ -134,42 +122,46 @@ int lmdif1(
 
     /*     ********** */
 
-    /* Parameter adjustments */
-    --fvec;
-    --iwa;
-    --x;
-    --wa;
+    const doublereal factor = 100;
 
-    /* Function Body */
+    static integer mp5n, mode, nfev;
+    static doublereal ftol, gtol, xtol;
+    static doublereal epsfcn;
+    static integer maxfev, nprint;
+
+    // Function body
+
     *info = 0;
 
-    /* check the input parameters for errors. */
+    // Check the input parameters for errors.
 
-    if (n <= 0 || m < n || *tol < zero || *lwa < m * n + n * 5 + m)
+    if (n <= 0 || m < n || tol < 0 || lwa < m * n + n * 5 + m)
     {
-        goto L10;
+        return;
     }
 
-    /* call lmdif. */
+    // Call lmdif().
 
     maxfev = (n + 1) * 200;
-    ftol = *tol;
-    xtol = *tol;
-    gtol = zero;
-    epsfcn = zero;
-    mode = 1;
+    ftol   = tol;
+    xtol   = tol;
+    gtol   = 0;
+    epsfcn = 0;
+    mode   = 1;
     nprint = 0;
-    mp5n = m + n * 5;
+    mp5n   = m + n * 5;
 
-    lmdif(fcn, m, n, &x[1], &fvec[1], &ftol, &xtol, &gtol, &maxfev, &epsfcn, &wa[1], &mode, &factor, &nprint, info, &nfev, &wa[mp5n + 1],
-          m, &iwa[1], &wa[n + 1], &wa[(n << 1) + 1], &wa[n * 3 + 1], &wa[(n << 2) + 1], &wa[n * 5 + 1]);
+    lmdif(fcn, m, n, x, fvec, ftol, xtol, gtol, maxfev, epsfcn, wa, mode, factor, nprint, info, &nfev,
+          &wa[mp5n],
+          m, iwa,
+          &wa[n * 1],
+          &wa[n * 2],
+          &wa[n * 3],
+          &wa[n * 4],
+          &wa[n * 5]);
 
     if (*info == 8)
     {
         *info = 4;
     }
-
-L10:
-    return 0;
-
 }

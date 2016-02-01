@@ -151,20 +151,8 @@ int main(void)
         PY[i] = goodfunc(PX[i]);
     }
 
-    int rc = lmdif1(
-        fcn,
-        m,
-        n,
-        x,
-        fvec,
-        &tol,
-        &info,
-        iwa,
-        wa,
-        &lwa
-    );
+    lmdif1(fcn, m, n, x, fvec, tol, &info, iwa, wa, lwa);
 
-    printf("rc: %d\n", rc);
     printf("info: %d\n", info);
 
     return 0;

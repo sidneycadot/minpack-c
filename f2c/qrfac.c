@@ -11,18 +11,15 @@
 */
 
 #include <stdbool.h>
+#include <math.h>
 #include "minpack_c.h"
 
-/* Table of constant values */
-
-static integer c__1 = 1;
-
-int qrfac(
+void qrfac(
         const integer m,
         const integer n,
         doublereal *a,
         const integer lda,
-        bool       *pivot,
+        const bool    pivot,
         integer    *ipvt,
         const integer lipvt,
         doublereal *rdiag,
@@ -142,7 +139,7 @@ int qrfac(
 
     /* epsmch is the machine precision. */
 
-    epsmch = dpmpar(&c__1);
+    epsmch = dpmpar_1;
 
     /* compute the initial column norms and initialize several arrays. */
 
@@ -152,7 +149,7 @@ int qrfac(
         acnorm[j] = enorm(m, &a[j * a_dim1 + 1]);
         rdiag[j] = acnorm[j];
         wa[j] = rdiag[j];
-        if (*pivot)
+        if (pivot)
         {
             ipvt[j] = j;
         }
@@ -165,7 +162,7 @@ int qrfac(
     i__1 = minmn;
     for (j = 1; j <= i__1; ++j)
     {
-        if (! (*pivot))
+        if (!pivot)
         {
             goto L40;
         }
@@ -245,7 +242,7 @@ L40:
             {
                 a[i__ + k * a_dim1] -= temp * a[i__ + j * a_dim1];
             }
-            if (! (*pivot) || rdiag[k] == zero)
+            if (!pivot || rdiag[k] == zero)
             {
                 goto L80;
             }
@@ -270,6 +267,4 @@ L40:
 L100:
         rdiag[j] = -ajnorm;
     }
-
-    return 0;
 }

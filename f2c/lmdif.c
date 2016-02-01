@@ -20,8 +20,8 @@ static bool c_true = true;
 
 int lmdif(
         lmdif_fcn   fcn,
-        integer    *m,
-        integer    *n,
+        const integer m,
+        const integer n,
         doublereal *x, 
         doublereal *fvec,
         doublereal *ftol,
@@ -36,7 +36,7 @@ int lmdif(
         integer    *info,
         integer    *nfev,
         doublereal *fjac,
-        integer    *ldfjac,
+        integer    ldfjac,
         integer    *ipvt,
         doublereal *qtf,
         doublereal *wa1,
@@ -263,7 +263,7 @@ int lmdif(
     --ipvt;
     --diag;
     --x;
-    fjac_dim1 = *ldfjac;
+    fjac_dim1 = ldfjac;
     fjac_offset = 1 + fjac_dim1;
     fjac -= fjac_offset;
 
@@ -279,7 +279,7 @@ int lmdif(
 
     /* check the input parameters for errors. */
 
-    if (*n <= 0 || *m < *n || *ldfjac < *m || *ftol < zero || *xtol < zero || *gtol < zero || *maxfev <= 0 || *factor <= zero)
+    if (n <= 0 || m < n || ldfjac < m || *ftol < zero || *xtol < zero || *gtol < zero || *maxfev <= 0 || *factor <= zero)
     {
         goto L300;
     }
@@ -289,7 +289,7 @@ int lmdif(
         goto L20;
     }
 
-    i__1 = *n;
+    i__1 = n;
     for (j = 1; j <= i__1; ++j)
     {
         if (diag[j] <= zero)
@@ -324,7 +324,7 @@ L30:
 
     iflag = 2;
     fdjac2(fcn, m, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &iflag, epsfcn, &wa4[1]);
-    *nfev += *n;
+    *nfev += n;
     if (iflag < 0)
     {
         goto L300;
@@ -365,7 +365,7 @@ L40:
         goto L60;
     }
 
-    i__1 = *n;
+    i__1 = n;
     for (j = 1; j <= i__1; ++j)
     {
         diag[j] = wa2[j];
@@ -380,7 +380,7 @@ L60:
     /* on the first iteration, calculate the norm of the scaled x */
     /* and initialize the step bound delta. */
 
-    i__1 = *n;
+    i__1 = n;
     for (j = 1; j <= i__1; ++j)
     {
         wa3[j] = diag[j] * x[j];
@@ -397,80 +397,85 @@ L80:
     /* form (q transpose)*fvec and store the first n components in */
     /* qtf. */
 
-    i__1 = *m;
-    for (i__ = 1; i__ <= i__1; ++i__) {
-	wa4[i__] = fvec[i__];
-/* L90: */
+    i__1 = m;
+    for (i__ = 1; i__ <= i__1; ++i__)
+    {
+        wa4[i__] = fvec[i__];
     }
-    i__1 = *n;
-    for (j = 1; j <= i__1; ++j) {
-	if (fjac[j + j * fjac_dim1] == zero) {
-	    goto L120;
-	}
-	sum = zero;
-	i__2 = *m;
-	for (i__ = j; i__ <= i__2; ++i__) {
-	    sum += fjac[i__ + j * fjac_dim1] * wa4[i__];
-/* L100: */
-	}
-	temp = -sum / fjac[j + j * fjac_dim1];
-	i__2 = *m;
-	for (i__ = j; i__ <= i__2; ++i__) {
-	    wa4[i__] += fjac[i__ + j * fjac_dim1] * temp;
-/* L110: */
-	}
+
+    i__1 = n;
+    for (j = 1; j <= i__1; ++j)
+    {
+        if (fjac[j + j * fjac_dim1] == zero)
+        {
+            goto L120;
+        }
+        sum = zero;
+        i__2 = m;
+        for (i__ = j; i__ <= i__2; ++i__)
+        {
+            sum += fjac[i__ + j * fjac_dim1] * wa4[i__];
+        }
+        temp = -sum / fjac[j + j * fjac_dim1];
+        i__2 = m;
+        for (i__ = j; i__ <= i__2; ++i__)
+        {
+            wa4[i__] += fjac[i__ + j * fjac_dim1] * temp;
+        }
 L120:
-	fjac[j + j * fjac_dim1] = wa1[j];
-	qtf[j] = wa4[j];
-/* L130: */
+        fjac[j + j * fjac_dim1] = wa1[j];
+        qtf[j] = wa4[j];
     }
 
 /*        compute the norm of the scaled gradient. */
 
     gnorm = zero;
-    if (fnorm == zero) {
-	goto L170;
+    if (fnorm == zero)
+    {
+        goto L170;
     }
-    i__1 = *n;
-    for (j = 1; j <= i__1; ++j) {
-	l = ipvt[j];
-	if (wa2[l] == zero) {
-	    goto L150;
-	}
-	sum = zero;
-	i__2 = j;
-	for (i__ = 1; i__ <= i__2; ++i__) {
-	    sum += fjac[i__ + j * fjac_dim1] * (qtf[i__] / fnorm);
-/* L140: */
-	}
-/* Computing MAX */
-	d__2 = gnorm, d__3 = (d__1 = sum / wa2[l], fabs(d__1));
-	gnorm = fmax(d__2, d__3);
-L150:
-/* L160: */
-	;
+
+    i__1 = n;
+    for (j = 1; j <= i__1; ++j)
+    {
+        l = ipvt[j];
+        if (wa2[l] == zero)
+        {
+            goto L150;
+        }
+        sum = zero;
+        i__2 = j;
+        for (i__ = 1; i__ <= i__2; ++i__)
+        {
+            sum += fjac[i__ + j * fjac_dim1] * (qtf[i__] / fnorm);
+        }
+        /* Computing MAX */
+        d__2 = gnorm, d__3 = (d__1 = sum / wa2[l], fabs(d__1));
+        gnorm = fmax(d__2, d__3);
+L150: ;
     }
+
 L170:
 
     /* test for convergence of the gradient norm. */
 
     if (gnorm <= *gtol)
     {
-	*info = 4;
+        *info = 4;
     }
 
     if (*info != 0)
     {
-	goto L300;
+        goto L300;
     }
 
     /* rescale if necessary. */
 
     if (*mode == 2)
     {
-	goto L190;
+        goto L190;
     }
-    i__1 = *n;
+    i__1 = n;
 
     for (j = 1; j <= i__1; ++j)
     {
@@ -490,7 +495,7 @@ L200:
 
     /* store the direction p and x + p. calculate the norm of p. */
 
-    i__1 = *n;
+    i__1 = n;
     for (j = 1; j <= i__1; ++j)
     {
         wa1[j] = -wa1[j];
@@ -499,14 +504,14 @@ L200:
     }
     pnorm = enorm(n, &wa3[1]);
 
-/*           on the first iteration, adjust the initial step bound. */
+    /* on the first iteration, adjust the initial step bound. */
 
     if (iter == 1)
     {
         delta = fmin(delta, pnorm);
     }
 
-/*           evaluate the function at x + p and calculate its norm. */
+    /* evaluate the function at x + p and calculate its norm. */
 
     iflag = 1;
     (*fcn)(m, n, &wa2[1], &wa4[1], &iflag);
@@ -527,36 +532,37 @@ L200:
         actred = one - d__1 * d__1;
     }
 
-/*           compute the scaled predicted reduction and */
-/*           the scaled directional derivative. */
+    /* compute the scaled predicted reduction and */
+    /* the scaled directional derivative. */
 
-    i__1 = *n;
-    for (j = 1; j <= i__1; ++j) {
-	wa3[j] = zero;
-	l = ipvt[j];
-	temp = wa1[l];
-	i__2 = j;
-	for (i__ = 1; i__ <= i__2; ++i__) {
-	    wa3[i__] += fjac[i__ + j * fjac_dim1] * temp;
-/* L220: */
-	}
-/* L230: */
+    i__1 = n;
+    for (j = 1; j <= i__1; ++j)
+    {
+        wa3[j] = zero;
+        l = ipvt[j];
+        temp = wa1[l];
+        i__2 = j;
+        for (i__ = 1; i__ <= i__2; ++i__)
+        {
+            wa3[i__] += fjac[i__ + j * fjac_dim1] * temp;
+        }
     }
+
     temp1 = enorm(n, &wa3[1]) / fnorm;
     temp2 = sqrt(par) * pnorm / fnorm;
-/* Computing 2nd power */
+    /* Computing 2nd power */
     d__1 = temp1;
-/* Computing 2nd power */
+    /* Computing 2nd power */
     d__2 = temp2;
     prered = d__1 * d__1 + d__2 * d__2 / p5;
-/* Computing 2nd power */
+    /* Computing 2nd power */
     d__1 = temp1;
-/* Computing 2nd power */
+    /* Computing 2nd power */
     d__2 = temp2;
     dirder = -(d__1 * d__1 + d__2 * d__2);
 
-/*           compute the ratio of the actual to the predicted */
-/*           reduction. */
+    /* compute the ratio of the actual to the predicted */
+    /* reduction. */
 
     ratio = zero;
     if (prered != zero) {
@@ -565,54 +571,68 @@ L200:
 
 /*           update the step bound. */
 
-    if (ratio > p25) {
-	goto L240;
+    if (ratio > p25)
+    {
+        goto L240;
     }
-    if (actred >= zero) {
-	temp = p5;
+
+    if (actred >= zero)
+    {
+        temp = p5;
     }
-    if (actred < zero) {
-	temp = p5 * dirder / (dirder + p5 * actred);
+    if (actred < zero)
+    {
+        temp = p5 * dirder / (dirder + p5 * actred);
     }
-    if (p1 * fnorm1 >= fnorm || temp < p1) {
-	temp = p1;
+
+    if (p1 * fnorm1 >= fnorm || temp < p1)
+    {
+        temp = p1;
     }
-/* Computing MIN */
+
+    /* Computing MIN */
     d__1 = delta, d__2 = pnorm / p1;
     delta = temp * fmin(d__1,d__2);
     par /= temp;
     goto L260;
+
 L240:
-    if (par != zero && ratio < p75) {
-	goto L250;
+    if (par != zero && ratio < p75)
+    {
+        goto L250;
     }
+
     delta = pnorm / p5;
     par = p5 * par;
 L250:
 L260:
 
-/*           test for successful iteration. */
+    /* test for successful iteration. */
 
-    if (ratio < p0001) {
-	goto L290;
+    if (ratio < p0001)
+    {
+        goto L290;
     }
 
-/*           successful iteration. update x, fvec, and their norms. */
+    /* successful iteration. update x, fvec, and their norms. */
 
-    i__1 = *n;
-    for (j = 1; j <= i__1; ++j) {
-	x[j] = wa2[j];
-	wa2[j] = diag[j] * x[j];
-/* L270: */
+    i__1 = n;
+    for (j = 1; j <= i__1; ++j)
+    {
+        x[j] = wa2[j];
+        wa2[j] = diag[j] * x[j];
     }
-    i__1 = *m;
-    for (i__ = 1; i__ <= i__1; ++i__) {
-	fvec[i__] = wa4[i__];
-/* L280: */
+
+    i__1 = m;
+    for (i__ = 1; i__ <= i__1; ++i__)
+    {
+        fvec[i__] = wa4[i__];
     }
+
     xnorm = enorm(n, &wa2[1]);
     fnorm = fnorm1;
     ++iter;
+
 L290:
 
     /* tests for convergence. */
@@ -668,16 +688,20 @@ L290:
     /* end of the outer loop. */
 
     goto L30;
+
 L300:
 
-/*     termination, either normal or user imposed. */
+    /* termination, either normal or user imposed. */
 
-    if (iflag < 0) {
-	*info = iflag;
+    if (iflag < 0)
+    {
+        *info = iflag;
     }
+
     iflag = 0;
-    if (*nprint > 0) {
-	(*fcn)(m, n, &x[1], &fvec[1], &iflag);
+    if (*nprint > 0)
+    {
+        (*fcn)(m, n, &x[1], &fvec[1], &iflag);
     }
 
     return 0;

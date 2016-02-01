@@ -13,7 +13,7 @@
 #include <math.h>
 #include "minpack_c.h"
 
-doublereal enorm(integer *n, doublereal *x)
+doublereal enorm(const integer n, doublereal *x)
 {
     /* Initialized data */
 
@@ -77,9 +77,9 @@ doublereal enorm(integer *n, doublereal *x)
     s3 = zero;
     x1max = zero;
     x3max = zero;
-    floatn = (doublereal) (*n);
+    floatn = n;
     agiant = rgiant / floatn;
-    i__1 = *n;
+    i__1 = n;
 
     for (i__ = 1; i__ <= i__1; ++i__)
     {
@@ -151,35 +151,28 @@ L80:
 
     /* calculation of norm. */
 
-    if (s1 == zero)
+    if (s1 != zero)
     {
-        goto L100;
+        ret_val = x1max * sqrt(s1 + s2 / x1max / x1max);
+        goto L120;
     }
 
-    ret_val = x1max * sqrt(s1 + s2 / x1max / x1max);
-    goto L130;
-
-L100:
-    if (s2 == zero) {
-        goto L110;
-    }
-
-    if (s2 >= x3max)
+    if (s2 != zero)
     {
-        ret_val = sqrt(s2 * (one + x3max / s2 * (x3max * s3)));
+        if (s2 >= x3max)
+        {
+            ret_val = sqrt(s2 * (one + x3max / s2 * (x3max * s3)));
+        }
+        else
+        {
+            ret_val = sqrt(x3max * (s2 / x3max + x3max * s3));
+        }
+        goto L120;
     }
-    else
-    {
-        ret_val = sqrt(x3max * (s2 / x3max + x3max * s3));
-    }
-    goto L120;
-L110:
+
     ret_val = x3max * sqrt(s3);
+
 L120:
-L130:
 
     return ret_val;
-
-/*     last card of function enorm. */
-
 }

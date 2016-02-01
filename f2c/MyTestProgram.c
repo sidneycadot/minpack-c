@@ -42,15 +42,18 @@ double PY[20];
 /*         the user wants to terminate execution of lmder1. */
 /*         in this case set iflag to a negative integer. */
 
-void fcn(integer *m, integer *n, doublereal * x, doublereal *fvec, integer *iflag)
+void fcn(const integer m, const integer n, doublereal * x, doublereal *fvec, integer *iflag)
 {
-    printf("invocation fcn(m = %d, n = %d, x[], fvec[], iflag = %d)\n", *m, *n, *iflag);
-    for (int i = 0; i <= (*n); ++i)
+    printf("invocation fcn(m = %d, n = %d, x[], fvec[], iflag = %d)\n", m, n, *iflag);
+    for (int i = 0; i < n; ++i)
     {
         printf("x[%d] = %f\n", i, x[i]);
     }
 
-    exit(1);
+    for (int i = 0; i < m; ++i)
+    {
+        fvec[i] = fitfunc(PX[i], x[0], x[1]) - PY[i];
+    }
 }
 
 /*       m is a positive integer input variable set to the number */
@@ -128,8 +131,6 @@ void fcn(integer *m, integer *n, doublereal * x, doublereal *fvec, integer *ifla
 
 int main(void)
 {
-    printf("hello!\n");
-
     integer m = 20; // number of points?
     integer n = 2; // number of parameters to solve for (2).
 
@@ -141,11 +142,10 @@ int main(void)
     doublereal wa[5001];
     integer    lwa = 5000; // length of wa buffer
 
-    x[0] = 101;
-    x[1] = 102;
-    x[2] = 103;
+    x[0] = 10.0;
+    x[1] = 2.0;
 
-    for (int i = 1; i <= 20; ++i)
+    for (int i = 0; i < 20; ++i)
     {
         PX[i] = 0.3 + 1.1 * i;
         PY[i] = goodfunc(PX[i]);
@@ -153,8 +153,8 @@ int main(void)
 
     int rc = lmdif1(
         fcn,
-        &m,
-        &n,
+        m,
+        n,
         x,
         fvec,
         &tol,

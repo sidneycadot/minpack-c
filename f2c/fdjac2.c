@@ -19,12 +19,12 @@ static integer c__1 = 1;
 
 int fdjac2(
         lmdif_fcn  fcn,
-        integer    *m,
-        integer    *n,
+        const integer m,
+        const integer n,
         doublereal *x,
         doublereal *fvec,
         doublereal *fjac,
-        integer    *ldfjac,
+        const integer ldfjac,
         integer    *iflag, 
         doublereal *epsfcn,
         doublereal *wa
@@ -125,7 +125,7 @@ int fdjac2(
     --wa;
     --fvec;
     --x;
-    fjac_dim1 = *ldfjac;
+    fjac_dim1 = ldfjac;
     fjac_offset = 1 + fjac_dim1;
     fjac -= fjac_offset;
 
@@ -135,8 +135,8 @@ int fdjac2(
 
     epsmch = dpmpar(&c__1);
 
-    eps = sqrt((fmax(*epsfcn,epsmch)));
-    i__1 = *n;
+    eps = sqrt((fmax(*epsfcn, epsmch)));
+    i__1 = n;
     for (j = 1; j <= i__1; ++j)
     {
         temp = x[j];
@@ -152,7 +152,7 @@ int fdjac2(
             break;
         }
         x[j] = temp;
-        i__2 = *m;
+        i__2 = m;
 
         for (i__ = 1; i__ <= i__2; ++i__)
         {

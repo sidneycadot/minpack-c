@@ -9,36 +9,47 @@
 typedef int integer;
 typedef double doublereal;
 
-typedef void (*S_fp)(integer *m, integer *n, doublereal *, doublereal *, doublereal *, integer *, integer *);
-typedef int (*U_fp)(int);
+typedef void (*S_fp)(const integer m, const integer n, doublereal *, doublereal *, doublereal *, const integer, integer *);
+//typedef int (*U_fp)(int);
 
-typedef void (*lmdif_fcn)(integer * m, integer *n, doublereal * x, doublereal * fvec, integer *iflag);
+typedef void (*lmdif_fcn)(const integer m, const integer n, doublereal * x, doublereal * fvec, integer * iflag);
 
 doublereal dpmpar(integer *i__);
 
-doublereal enorm(integer *n, doublereal *x);
+doublereal enorm(const integer n, doublereal *x);
 
 double fmin(double a, double b);
 double fmax(double a, double b);
 
+void qrsolv(
+        const integer n,
+        doublereal *r__,
+        const integer ldr,
+        integer    *ipvt,
+        doublereal *diag,
+        doublereal *qtb,
+        doublereal *x,
+        doublereal *sdiag,
+        doublereal *wa
+    );
 
 int fdjac2(
         lmdif_fcn  fcn,
-        integer    *m,
-        integer    *n,
+        const integer m,
+        const integer n,
         doublereal *x,
         doublereal *fvec,
         doublereal *fjac,
-        integer    *ldfjac,
+        const integer ldfjac,
         integer    *iflag, 
         doublereal *epsfcn,
         doublereal *wa
     );
 
 int lmpar(
-        integer    *n,
+        const integer n,
         doublereal *r__,
-        integer    *ldr,
+        const integer ldr,
         integer    *ipvt,
         doublereal *diag,
         doublereal *qtb,
@@ -51,13 +62,13 @@ int lmpar(
     );
 
 int qrfac(
-        integer    *m,
-        integer    *n,
+        const integer m,
+        const integer n,
         doublereal *a,
-        integer    *lda,
+        const integer lda,
         bool       *pivot,
         integer    *ipvt,
-        integer    *lipvt,
+        const integer lipvt,
         doublereal *rdiag,
         doublereal *acnorm,
         doublereal *wa
@@ -65,12 +76,12 @@ int qrfac(
 
 int lmder(
         S_fp       fcn,
-        integer    *m,
-        integer    *n,
+        const integer m,
+        const integer n,
         doublereal *x,
         doublereal *fvec,
         doublereal *fjac,
-        integer    *ldfjac,
+        const integer ldfjac,
         doublereal *ftol,
         doublereal *xtol,
         doublereal *gtol,
@@ -92,8 +103,8 @@ int lmder(
 
 int lmder1(
         S_fp       fcn,
-        integer    *m,
-        integer    *n,
+        const integer m,
+        const integer n,
         doublereal *x,
         doublereal *fvec,
         doublereal *fjac,
@@ -107,8 +118,8 @@ int lmder1(
 
 int lmdif(
         lmdif_fcn   fcn,
-        integer    *m,
-        integer    *n,
+        const integer m,
+        const integer n,
         doublereal *x, 
         doublereal *fvec,
         doublereal *ftol,
@@ -123,7 +134,7 @@ int lmdif(
         integer    *info,
         integer    *nfev,
         doublereal *fjac,
-        integer    *ldfjac,
+        const integer ldfjac,
         integer    *ipvt,
         doublereal *qtf,
         doublereal *wa1,
@@ -134,8 +145,8 @@ int lmdif(
 
 int lmdif1(
         lmdif_fcn   fcn,
-        integer    *m,
-        integer    *n,
+        const integer m,
+        const integer n,
         doublereal *x,
         doublereal *fvec,
         doublereal *tol,

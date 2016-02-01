@@ -1,50 +1,25 @@
 
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "minpack_c.h"
 
-int lmder1(
-        S_fp       fcn,
-        integer    *m,
-        integer    *n,
-        doublereal *x,
-        doublereal *fvec,
-        doublereal *fjac,
-        integer    *ldfjac,
-        doublereal *tol,
-        integer    *info,
-        integer    *ipvt,
-        doublereal *wa,
-        integer    *lwa
-    )
+double goodfunc(double x)
 {
-    /* Initialized data */
+    x = (x - 11.234);
+    x /= 2.345;
+    return exp(-x * x);
+}
 
-    static doublereal factor = 100.;
-    static doublereal zero = 0.;
+double fitfunc(double x, double offset, double scale)
+{
+    x = (x - offset);
+    x /= scale;
+    return exp(-x * x);
+}
 
-    /* System generated locals */
-    integer fjac_dim1, fjac_offset;
-
-    /* Local variables */
-    static integer mode, nfev, njev;
-    static doublereal ftol, gtol, xtol;
-    static integer maxfev, nprint;
-
-/*     ********** */
-
-/*     subroutine lmder1 */
-
-/*     the purpose of lmder1 is to minimize the sum of the squares of */
-/*     m nonlinear functions in n variables by a modification of the */
-/*     levenberg-marquardt algorithm. this is done by using the more */
-/*     general least-squares solver lmder. the user must provide a */
-/*     subroutine which calculates the functions and the jacobian. */
-
-/*     the subroutine statement is */
-
-/*       subroutine lmder1(fcn,m,n,x,fvec,fjac,ldfjac,tol,info, */
-/*                         ipvt,wa,lwa) */
-
-/*     where */
+double PX[20];
+double PY[20];
 
 /*       fcn is the name of the user-supplied subroutine which */
 /*         calculates the functions and the jacobian. fcn must */
@@ -66,6 +41,25 @@ int lmder1(
 /*         the value of iflag should not be changed by fcn unless */
 /*         the user wants to terminate execution of lmder1. */
 /*         in this case set iflag to a negative integer. */
+
+void fcn(integer *m, integer *n, doublereal * x, doublereal *fvec, doublereal *fjac, integer *ldfjac, integer *iflag)
+{
+    printf("invocation fcn(m = %d, n = %d, x[], fvec[], fjac[], ldfac = %d, iflag = %d)\n", *m, *n, (*ldfjac), (*iflag));
+    for (int i = 0; i <= (*n); ++i)
+    {
+        printf("x[%d] = %f\n", i, x[i]);
+    }
+
+    if (iflag == 1)
+    {
+        for (int i = 0; i < (*m); ++i)
+        {
+            fvec[i] = fitfunc(PX[i], x[0], x[1]) - PY[i];
+        }
+    }
+
+    exit(1);
+}
 
 /*       m is a positive integer input variable set to the number */
 /*         of functions. */
@@ -140,78 +134,50 @@ int lmder1(
 
 /*       lwa is a positive integer input variable not less than 5*n+m. */
 
-/*     subprograms called */
+int main(void)
+{
+    printf("hello!\n");
 
-/*       user-supplied ...... fcn */
+    integer m = 20; // number of points?
+    integer n = 2; // number of parameters to solve for (2).
 
-/*       minpack-supplied ... lmder */
+    doublereal x[3];           // initial parameter guess and solution
+    doublereal fvec[1001];
+    doublereal fjac[1001];
+    integer    ldfjac = m;
+    doublereal tol = 1e-6;
+    integer    info;
+    integer    ipvt[1001];
+    doublereal wa[10001];
+    integer    lwa = 5000; // length of wa buffer
 
-/*     argonne national laboratory. minpack project. march 1980. */
-/*     burton s. garbow, kenneth e. hillstrom, jorge j. more */
+    x[0] = 101;
+    x[1] = 102;
+    x[2] = 103;
 
-/*     ********** */
-
-    /* Parameter adjustments */
-
-    --fvec;
-    --ipvt;
-    --x;
-    fjac_dim1 = *ldfjac;
-    fjac_offset = 1 + fjac_dim1;
-    fjac -= fjac_offset;
-    --wa;
-
-    /* Function Body */
-
-    *info = 0;
-
-    /* check the input parameters for errors. */
-
-    if (*n <= 0 || *m < *n || *ldfjac < *m || *tol < zero || *lwa < *n * 5 + *m)
+    for (int i = 1; i <= 20; ++i)
     {
-        return 0;
+        PX[i] = 0.3 + 1.1 * i;
+        PY[i] = goodfunc(PX[i]);
     }
 
-    /* call lmder. */
-
-    maxfev = (*n + 1) * 100;
-    ftol   = *tol;
-    xtol   = *tol;
-    gtol   = zero;
-    mode   = 1;
-    nprint = 0;
-
-    lmder(
+    int rc = lmder1(
         fcn,
-        m,
-        n,
-        &x[1],
-        &fvec[1],
-        &fjac[fjac_offset],
-        ldfjac,
-        &ftol,
-        &xtol,
-        &gtol,
-        &maxfev,
-        &wa[1],
-        &mode,
-        &factor,
-        &nprint,
-        info,
-        &nfev,
-        &njev,
-        &ipvt[1],
-        &wa[*n * 1 + 1],
-        &wa[*n * 2 + 1],
-        &wa[*n * 3 + 1],
-        &wa[*n * 4 + 1],
-        &wa[*n * 5 + 1]
+        &m,
+        &n,
+        x,
+        fvec,
+        fjac,
+        &ldfjac,
+        &tol,
+        &info,
+        ipvt,
+        wa,
+        &lwa
     );
 
-    if (*info == 8)
-    {
-        *info = 4;
-    }
+    printf("rc: %d\n", rc);
+    printf("info: %d\n", info);
 
     return 0;
 }

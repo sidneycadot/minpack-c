@@ -10,16 +10,27 @@
 		http://www.netlib.org/f2c/libf2c.zip
 */
 
-#include "f2c.h"
+#include <math.h>
+#include "minpack_c.h"
 
 /* Table of constant values */
 
 static integer c__2 = 2;
 
-/* Subroutine */ int lmpar_(integer *n, doublereal *r__, integer *ldr, 
-	integer *ipvt, doublereal *diag, doublereal *qtb, doublereal *delta, 
-	doublereal *par, doublereal *x, doublereal *sdiag, doublereal *wa1, 
-	doublereal *wa2)
+int lmpar(
+        integer    *n,
+        doublereal *r__,
+        integer    *ldr,
+        integer    *ipvt,
+        doublereal *diag,
+        doublereal *qtb,
+        doublereal *delta,
+        doublereal *par,
+        doublereal *x,
+        doublereal *sdiag,
+        doublereal *wa1,
+        doublereal *wa2
+    )
 {
     /* Initialized data */
 
@@ -42,9 +53,7 @@ static integer c__2 = 2;
     static integer iter;
     static doublereal temp, paru, dwarf;
     static integer nsing;
-    extern doublereal enorm_(integer *, doublereal *);
     static doublereal gnorm;
-    extern doublereal dpmpar_(integer *);
     static doublereal dxnorm;
     extern /* Subroutine */ int qrsolv_(integer *, doublereal *, integer *, 
 	    integer *, doublereal *, doublereal *, doublereal *, doublereal *,
@@ -160,7 +169,7 @@ static integer c__2 = 2;
 
 /*     dwarf is the smallest positive magnitude. */
 
-    dwarf = dpmpar_(&c__2);
+    dwarf = dpmpar(&c__2);
 
 /*     compute and store in x the gauss-newton direction. if the */
 /*     jacobian is rank-deficient, obtain a least squares solution. */
@@ -216,7 +225,7 @@ L50:
 	wa2[j] = diag[j] * x[j];
 /* L70: */
     }
-    dxnorm = enorm_(n, &wa2[1]);
+    dxnorm = enorm(n, &wa2[1]);
     fp = dxnorm - *delta;
     if (fp <= p1 * *delta) {
 	goto L220;
@@ -252,7 +261,7 @@ L100:
 	wa1[j] = (wa1[j] - sum) / r__[j + j * r_dim1];
 /* L110: */
     }
-    temp = enorm_(n, &wa1[1]);
+    temp = enorm(n, &wa1[1]);
     parl = fp / *delta / temp / temp;
 L120:
 
@@ -270,17 +279,17 @@ L120:
 	wa1[j] = sum / diag[l];
 /* L140: */
     }
-    gnorm = enorm_(n, &wa1[1]);
+    gnorm = enorm(n, &wa1[1]);
     paru = gnorm / *delta;
     if (paru == zero) {
-	paru = dwarf / min(*delta,p1);
+	paru = dwarf / fmin(*delta, p1);
     }
 
 /*     if the input par lies outside of the interval (parl,paru), */
 /*     set par to the closer endpoint. */
 
-    *par = max(*par,parl);
-    *par = min(*par,paru);
+    *par = fmax(*par,parl);
+    *par = fmin(*par,paru);
     if (*par == zero) {
 	*par = gnorm / dxnorm;
     }
@@ -295,7 +304,7 @@ L150:
     if (*par == zero) {
 /* Computing MAX */
 	d__1 = dwarf, d__2 = p001 * paru;
-	*par = max(d__1,d__2);
+	*par = fmax(d__1, d__2);
     }
     temp = sqrt(*par);
     i__1 = *n;
@@ -310,7 +319,7 @@ L150:
 	wa2[j] = diag[j] * x[j];
 /* L170: */
     }
-    dxnorm = enorm_(n, &wa2[1]);
+    dxnorm = enorm(n, &wa2[1]);
     temp = fp;
     fp = dxnorm - *delta;
 
@@ -318,9 +327,9 @@ L150:
 /*        of par. also test for the exceptional cases where parl */
 /*        is zero or the number of iterations has reached 10. */
 
-    if (abs(fp) <= p1 * *delta || parl == zero && fp <= temp && temp < zero ||
-	     iter == 10) {
-	goto L220;
+    if (fabs(fp) <= p1 * *delta || (parl == zero && fp <= temp && temp < zero) || iter == 10)
+    {
+        goto L220;
     }
 
 /*        compute the newton correction. */
@@ -332,53 +341,58 @@ L150:
 /* L180: */
     }
     i__1 = *n;
-    for (j = 1; j <= i__1; ++j) {
+    for (j = 1; j <= i__1; ++j)
+    {
 	wa1[j] /= sdiag[j];
 	temp = wa1[j];
 	jp1 = j + 1;
-	if (*n < jp1) {
+	if (*n < jp1)
+        {
 	    goto L200;
 	}
 	i__2 = *n;
-	for (i__ = jp1; i__ <= i__2; ++i__) {
+	for (i__ = jp1; i__ <= i__2; ++i__)
+        {
 	    wa1[i__] -= r__[i__ + j * r_dim1] * temp;
-/* L190: */
 	}
 L200:
-/* L210: */
 	;
     }
-    temp = enorm_(n, &wa1[1]);
+    temp = enorm(n, &wa1[1]);
     parc = fp / *delta / temp / temp;
 
-/*        depending on the sign of the function, update parl or paru. */
+    /* depending on the sign of the function, update parl or paru. */
 
-    if (fp > zero) {
-	parl = max(parl,*par);
-    }
-    if (fp < zero) {
-	paru = min(paru,*par);
+    if (fp > zero)
+    {
+        parl = fmax(parl, *par);
     }
 
-/*        compute an improved estimate for par. */
+    if (fp < zero)
+    {
+        paru = fmin(paru, *par);
+    }
 
-/* Computing MAX */
+    /* compute an improved estimate for par. */
+
+    /* Computing MAX */
+
     d__1 = parl, d__2 = *par + parc;
-    *par = max(d__1,d__2);
 
-/*        end of an iteration. */
+    *par = fmax(d__1, d__2);
+
+    /* end of an iteration. */
 
     goto L150;
+
 L220:
 
-/*     termination. */
+    /* termination. */
 
-    if (iter == 0) {
-	*par = zero;
+    if (iter == 0)
+    {
+        *par = zero;
     }
     return 0;
 
-/*     last card of subroutine lmpar. */
-
-} /* lmpar_ */
-
+}

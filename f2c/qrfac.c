@@ -10,16 +10,28 @@
 		http://www.netlib.org/f2c/libf2c.zip
 */
 
-#include "f2c.h"
+#include <stdbool.h>
+#include "minpack_c.h"
 
 /* Table of constant values */
 
 static integer c__1 = 1;
 
-/* Subroutine */ int qrfac_(integer *m, integer *n, doublereal *a, integer *
-	lda, logical *pivot, integer *ipvt, integer *lipvt, doublereal *rdiag,
-	 doublereal *acnorm, doublereal *wa)
+int qrfac(
+        integer    *m,
+        integer    *n,
+        doublereal *a,
+        integer    *lda,
+        bool       *pivot,
+        integer    *ipvt,
+        integer    *lipvt,
+        doublereal *rdiag,
+        doublereal *acnorm,
+        doublereal *wa
+    )
 {
+    (void)lipvt; // unused
+
     /* Initialized data */
 
     static doublereal one = 1.;
@@ -39,9 +51,7 @@ static integer c__1 = 1;
     static integer kmax;
     static doublereal temp;
     static integer minmn;
-    extern doublereal enorm_(integer *, doublereal *);
     static doublereal epsmch;
-    extern doublereal dpmpar_(integer *);
     static doublereal ajnorm;
 
 /*     ********** */
@@ -132,50 +142,61 @@ static integer c__1 = 1;
 
 /*     epsmch is the machine precision. */
 
-    epsmch = dpmpar_(&c__1);
+    epsmch = dpmpar(&c__1);
 
 /*     compute the initial column norms and initialize several arrays. */
 
     i__1 = *n;
-    for (j = 1; j <= i__1; ++j) {
-	acnorm[j] = enorm_(m, &a[j * a_dim1 + 1]);
-	rdiag[j] = acnorm[j];
-	wa[j] = rdiag[j];
-	if (*pivot) {
-	    ipvt[j] = j;
-	}
-/* L10: */
+    for (j = 1; j <= i__1; ++j)
+    {
+        acnorm[j] = enorm(m, &a[j * a_dim1 + 1]);
+        rdiag[j] = acnorm[j];
+        wa[j] = rdiag[j];
+        if (*pivot)
+        {
+            ipvt[j] = j;
+        }
     }
 
-/*     reduce a to r with householder transformations. */
+    /* reduce a to r with householder transformations. */
 
-    minmn = min(*m,*n);
-    i__1 = minmn;
-    for (j = 1; j <= i__1; ++j) {
-	if (! (*pivot)) {
-	    goto L40;
-	}
+        minmn = fmin(*m, *n);
+
+        i__1 = minmn;
+        for (j = 1; j <= i__1; ++j)
+        {
+            if (! (*pivot))
+            {
+                goto L40;
+            }
 
 /*        bring the column of largest norm into the pivot position. */
 
 	kmax = j;
 	i__2 = *n;
-	for (k = j; k <= i__2; ++k) {
-	    if (rdiag[k] > rdiag[kmax]) {
+	for (k = j; k <= i__2; ++k)
+        {
+	    if (rdiag[k] > rdiag[kmax])
+            {
 		kmax = k;
 	    }
 /* L20: */
 	}
-	if (kmax == j) {
+
+	if (kmax == j)
+        {
 	    goto L40;
 	}
+
 	i__2 = *m;
-	for (i__ = 1; i__ <= i__2; ++i__) {
+	for (i__ = 1; i__ <= i__2; ++i__)
+        {
 	    temp = a[i__ + j * a_dim1];
 	    a[i__ + j * a_dim1] = a[i__ + kmax * a_dim1];
 	    a[i__ + kmax * a_dim1] = temp;
 /* L30: */
 	}
+
 	rdiag[kmax] = rdiag[j];
 	wa[kmax] = wa[j];
 	k = ipvt[j];
@@ -187,7 +208,7 @@ L40:
 /*        j-th column of a to a multiple of the j-th unit vector. */
 
 	i__2 = *m - j + 1;
-	ajnorm = enorm_(&i__2, &a[j + j * a_dim1]);
+	ajnorm = enorm(&i__2, &a[j + j * a_dim1]);
 	if (ajnorm == zero) {
 	    goto L100;
 	}
@@ -230,14 +251,14 @@ L40:
 /* Computing 2nd power */
 	    d__3 = temp;
 	    d__1 = zero, d__2 = one - d__3 * d__3;
-	    rdiag[k] *= sqrt((max(d__1,d__2)));
+	    rdiag[k] *= sqrt((fmax(d__1, d__2)));
 /* Computing 2nd power */
 	    d__1 = rdiag[k] / wa[k];
 	    if (p05 * (d__1 * d__1) > epsmch) {
 		goto L80;
 	    }
 	    i__3 = *m - j;
-	    rdiag[k] = enorm_(&i__3, &a[jp1 + k * a_dim1]);
+	    rdiag[k] = enorm(&i__3, &a[jp1 + k * a_dim1]);
 	    wa[k] = rdiag[k];
 L80:
 /* L90: */

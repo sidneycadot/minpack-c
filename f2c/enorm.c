@@ -10,9 +10,10 @@
 		http://www.netlib.org/f2c/libf2c.zip
 */
 
-#include "f2c.h"
+#include <math.h>
+#include "minpack_c.h"
 
-doublereal enorm_(integer *n, doublereal *x)
+doublereal enorm(integer *n, doublereal *x)
 {
     /* Initialized data */
 
@@ -24,9 +25,6 @@ doublereal enorm_(integer *n, doublereal *x)
     /* System generated locals */
     integer i__1;
     doublereal ret_val, d__1;
-
-    /* Builtin functions */
-    double sqrt(doublereal);
 
     /* Local variables */
     static integer i__;
@@ -82,7 +80,7 @@ doublereal enorm_(integer *n, doublereal *x)
     agiant = rgiant / floatn;
     i__1 = *n;
     for (i__ = 1; i__ <= i__1; ++i__) {
-	xabs = (d__1 = x[i__], abs(d__1));
+	xabs = (d__1 = x[i__], fabs(d__1));
 	if (xabs > rdwarf && xabs < agiant) {
 	    goto L70;
 	}
@@ -166,4 +164,3 @@ L130:
 /*     last card of function enorm. */
 
 } /* enorm_ */
-

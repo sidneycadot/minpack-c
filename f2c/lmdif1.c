@@ -10,11 +10,18 @@
 		http://www.netlib.org/f2c/libf2c.zip
 */
 
-#include "f2c.h"
 
-/* Subroutine */ int lmdif1_(U_fp fcn, integer *m, integer *n, doublereal *x, 
-	doublereal *fvec, doublereal *tol, integer *info, integer *iwa, 
-	doublereal *wa, integer *lwa)
+int lmdif1(
+        U_fp fcn,
+        integer     *m,
+        integer *n,
+        doublereal *x,
+        doublereal *fvec,
+        doublereal *tol,
+        integer *info,
+        integer *iwa,
+        doublereal *wa,
+        integer *lwa)
 {
     /* Initialized data */
 

@@ -15,58 +15,32 @@
 #include "minpack_c.h"
 
 void lmder(
-        lmder_fcn     fcn,
-        const integer m,
-        const integer n,
-        doublereal *x,
-        doublereal *fvec,
-        doublereal *fjac,
-        const integer ldfjac,
+        lmder_fcn        fcn,
+        const integer    m,
+        const integer    n,
+        doublereal      *x,
+        doublereal      *fvec,
+        doublereal      *fjac,
+        const integer    ldfjac,
         const doublereal ftol,
         const doublereal xtol,
         const doublereal gtol,
-        const integer maxfev,
-        doublereal *diag,
+        const integer    maxfev,
+        doublereal      *diag,
         const integer    mode,
         const doublereal factor,
         const integer    nprint,
-        integer    *info,
-        integer    *nfev,
-        integer    *njev,
-        integer    *ipvt,
-        doublereal *qtf,
-        doublereal *wa1,
-        doublereal *wa2,
-        doublereal *wa3,
-        doublereal *wa4
+        integer         *info,
+        integer         *nfev,
+        integer         *njev,
+        integer         *ipvt,
+        doublereal      *qtf,
+        doublereal      *wa1,
+        doublereal      *wa2,
+        doublereal      *wa3,
+        doublereal      *wa4
     )
 {
-    /* Initialized data */
-
-    static doublereal one = 1.;
-    static doublereal p1 = .1;
-    static doublereal p5 = .5;
-    static doublereal p25 = .25;
-    static doublereal p75 = .75;
-    static doublereal p0001 = 1e-4;
-    static doublereal zero = 0.;
-
-    /* System generated locals */
-    integer fjac_dim1, fjac_offset, i__1, i__2;
-    doublereal d__1, d__2, d__3;
-
-    /* Local variables */
-    static integer i__, j, l;
-    static doublereal par, sum;
-    static integer iter;
-    static doublereal temp, temp1, temp2;
-    static integer iflag;
-    static doublereal delta;
-    static doublereal ratio;
-    static doublereal fnorm, gnorm, pnorm, xnorm, fnorm1, actred, dirder, epsmch, prered;
-
-    /*     ********** */
-
     /*     subroutine lmder */
 
     /*     the purpose of lmder is to minimize the sum of the squares of */
@@ -241,7 +215,30 @@ void lmder(
     /*     argonne national laboratory. minpack project. march 1980. */
     /*     burton s. garbow, kenneth e. hillstrom, jorge j. more */
 
-    /*     ********** */
+    /* Initialized data */
+
+    static doublereal one = 1.;
+    static doublereal p1 = .1;
+    static doublereal p5 = .5;
+    static doublereal p25 = .25;
+    static doublereal p75 = .75;
+    static doublereal p0001 = 1e-4;
+    static doublereal zero = 0.;
+
+    /* System generated locals */
+    integer fjac_dim1, fjac_offset, i__1, i__2;
+    doublereal d__1, d__2, d__3;
+
+    /* Local variables */
+
+    static integer i__, j, l;
+    static doublereal par, sum;
+    static integer iter;
+    static doublereal temp, temp1, temp2;
+    static integer iflag;
+    static doublereal delta;
+    static doublereal ratio;
+    static doublereal fnorm, gnorm, pnorm, xnorm, fnorm1, actred, dirder, epsmch, prered;
 
     /* Parameter adjustments */
     --wa4;
@@ -275,25 +272,22 @@ void lmder(
         goto L300;
     }
 
-    if (mode != 2)
+    if (mode == 2)
     {
-        goto L20;
-    }
 
-    i__1 = n;
+        i__1 = n;
 
-    for (j = 1; j <= i__1; ++j)
-    {
-        if (diag[j] <= zero)
+        for (j = 1; j <= i__1; ++j)
         {
-            goto L300;
+            if (diag[j] <= zero)
+            {
+                goto L300;
+            }
         }
     }
 
-L20:
-
-    /* evaluate the function at the starting point */
-    /* and calculate its norm. */
+    // evaluate the function at the starting point 
+    // and calculate its norm.
 
     iflag = 1;
     (*fcn)(m, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &iflag);
@@ -305,12 +299,12 @@ L20:
 
     fnorm = enorm(m, &fvec[1]);
 
-    /* initialize levenberg-marquardt parameter and iteration counter. */
+    // Initialize levenberg-marquardt parameter and iteration counter.
 
     par = zero;
     iter = 1;
 
-    /* beginning of the outer loop. */
+    // Beginning of the outer loop.
 
 L30:
 
@@ -345,12 +339,12 @@ L30:
 
 L40:
 
-    /* compute the qr factorization of the jacobian. */
+    // Compute the qr factorization of the jacobian.
 
     qrfac(m, n, &fjac[fjac_offset], ldfjac, true, &ipvt[1], n, &wa1[1], &wa2[1], &wa3[1]);
 
-    /* on the first iteration and if mode is 1, scale according */
-    /* to the norms of the columns of the initial jacobian. */
+    // on the first iteration and if mode is 1, scale according
+    // to the norms of the columns of the initial jacobian.
 
     if (iter != 1)
     {

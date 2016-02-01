@@ -120,8 +120,6 @@ void lmdif1(
     /*     argonne national laboratory. minpack project. march 1980. */
     /*     burton s. garbow, kenneth e. hillstrom, jorge j. more */
 
-    /*     ********** */
-
     const doublereal factor = 100;
 
     static integer mp5n, mode, nfev;

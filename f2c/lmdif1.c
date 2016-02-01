@@ -10,18 +10,19 @@
 		http://www.netlib.org/f2c/libf2c.zip
 */
 
+#include "minpack_c.h"
 
 int lmdif1(
-        U_fp fcn,
-        integer     *m,
-        integer *n,
+        lmdif_fcn   fcn,
+        integer    *m,
+        integer    *n,
         doublereal *x,
         doublereal *fvec,
         doublereal *tol,
-        integer *info,
-        integer *iwa,
+        integer    *info,
+        integer    *iwa,
         doublereal *wa,
-        integer *lwa)
+        integer    *lwa)
 {
     /* Initialized data */
 
@@ -30,12 +31,6 @@ int lmdif1(
 
     static integer mp5n, mode, nfev;
     static doublereal ftol, gtol, xtol;
-    extern /* Subroutine */ int lmdif_(U_fp, integer *, integer *, doublereal 
-	    *, doublereal *, doublereal *, doublereal *, doublereal *, 
-	    integer *, doublereal *, doublereal *, integer *, doublereal *, 
-	    integer *, integer *, integer *, doublereal *, integer *, integer 
-	    *, doublereal *, doublereal *, doublereal *, doublereal *, 
-	    doublereal *);
     static doublereal epsfcn;
     static integer maxfev, nprint;
 
@@ -163,17 +158,17 @@ int lmdif1(
     mode = 1;
     nprint = 0;
     mp5n = *m + *n * 5;
-    lmdif_((U_fp)fcn, m, n, &x[1], &fvec[1], &ftol, &xtol, &gtol, &maxfev, &
+
+    lmdif(fcn, m, n, &x[1], &fvec[1], &ftol, &xtol, &gtol, &maxfev, &
 	    epsfcn, &wa[1], &mode, &factor, &nprint, info, &nfev, &wa[mp5n + 
 	    1], m, &iwa[1], &wa[*n + 1], &wa[(*n << 1) + 1], &wa[*n * 3 + 1], 
 	    &wa[(*n << 2) + 1], &wa[*n * 5 + 1]);
-    if (*info == 8) {
+
+    if (*info == 8)
+    {
 	*info = 4;
     }
 L10:
     return 0;
 
-/*     last card of subroutine lmdif1. */
-
-} /* lmdif1_ */
-
+}

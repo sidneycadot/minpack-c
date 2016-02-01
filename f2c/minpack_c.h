@@ -12,12 +12,28 @@ typedef double doublereal;
 typedef void (*S_fp)(integer *m, integer *n, doublereal *, doublereal *, doublereal *, integer *, integer *);
 typedef int (*U_fp)(int);
 
+typedef void (*lmdif_fcn)(integer * m, integer *n, doublereal * x, doublereal * fvec, integer *iflag);
+
 doublereal dpmpar(integer *i__);
 
 doublereal enorm(integer *n, doublereal *x);
 
 double fmin(double a, double b);
 double fmax(double a, double b);
+
+
+int fdjac2(
+        lmdif_fcn  fcn,
+        integer    *m,
+        integer    *n,
+        doublereal *x,
+        doublereal *fvec,
+        doublereal *fjac,
+        integer    *ldfjac,
+        integer    *iflag, 
+        doublereal *epsfcn,
+        doublereal *wa
+    );
 
 int lmpar(
         integer    *n,
@@ -85,6 +101,46 @@ int lmder1(
         doublereal *tol,
         integer    *info,
         integer    *ipvt,
+        doublereal *wa,
+        integer    *lwa
+    );
+
+int lmdif(
+        lmdif_fcn   fcn,
+        integer    *m,
+        integer    *n,
+        doublereal *x, 
+        doublereal *fvec,
+        doublereal *ftol,
+        doublereal *xtol,
+        doublereal *gtol,
+        integer    *maxfev,
+        doublereal *epsfcn,
+        doublereal *diag,
+        integer    * mode,
+        doublereal *factor,
+        integer    *nprint,
+        integer    *info,
+        integer    *nfev,
+        doublereal *fjac,
+        integer    *ldfjac,
+        integer    *ipvt,
+        doublereal *qtf,
+        doublereal *wa1,
+        doublereal *wa2,
+        doublereal *wa3,
+        doublereal *wa4
+    );
+
+int lmdif1(
+        lmdif_fcn   fcn,
+        integer    *m,
+        integer    *n,
+        doublereal *x,
+        doublereal *fvec,
+        doublereal *tol,
+        integer    *info,
+        integer    *iwa,
         doublereal *wa,
         integer    *lwa
     );

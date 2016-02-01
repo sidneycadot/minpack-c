@@ -42,20 +42,12 @@ double PY[20];
 /*         the user wants to terminate execution of lmder1. */
 /*         in this case set iflag to a negative integer. */
 
-void fcn(integer *m, integer *n, doublereal * x, doublereal *fvec, doublereal *fjac, integer *ldfjac, integer *iflag)
+void fcn(integer *m, integer *n, doublereal * x, doublereal *fvec, integer *iflag)
 {
-    printf("invocation fcn(m = %d, n = %d, x[], fvec[], fjac[], ldfac = %d, iflag = %d)\n", *m, *n, (*ldfjac), (*iflag));
+    printf("invocation fcn(m = %d, n = %d, x[], fvec[], iflag = %d)\n", *m, *n, *iflag);
     for (int i = 0; i <= (*n); ++i)
     {
         printf("x[%d] = %f\n", i, x[i]);
-    }
-
-    if (iflag == 1)
-    {
-        for (int i = 0; i < (*m); ++i)
-        {
-            fvec[i] = fitfunc(PX[i], x[0], x[1]) - PY[i];
-        }
     }
 
     exit(1);
@@ -143,12 +135,10 @@ int main(void)
 
     doublereal x[3];           // initial parameter guess and solution
     doublereal fvec[1001];
-    doublereal fjac[1001];
-    integer    ldfjac = m;
     doublereal tol = 1e-6;
     integer    info;
-    integer    ipvt[1001];
-    doublereal wa[10001];
+    integer    iwa[20];
+    doublereal wa[5001];
     integer    lwa = 5000; // length of wa buffer
 
     x[0] = 101;
@@ -161,17 +151,15 @@ int main(void)
         PY[i] = goodfunc(PX[i]);
     }
 
-    int rc = lmder1(
+    int rc = lmdif1(
         fcn,
         &m,
         &n,
         x,
         fvec,
-        fjac,
-        &ldfjac,
         &tol,
         &info,
-        ipvt,
+        iwa,
         wa,
         &lwa
     );

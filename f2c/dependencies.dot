@@ -1,0 +1,12 @@
+digraph G {
+
+    lmdif1 -> lmdif;
+
+    lmdif -> enorm;
+    lmdif -> fdjac2;
+    lmdif -> qrfac;
+    lmdif -> lmpar;
+
+    lmpar -> enorm;
+    lmpar -> qrsolv;
+}

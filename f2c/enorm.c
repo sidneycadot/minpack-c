@@ -13,7 +13,7 @@
 #include <math.h>
 #include "minpack_c.h"
 
-inline doublereal square(doublereal x)
+inline doublereal square(const doublereal x)
 {
     return x * x;
 }
@@ -113,27 +113,27 @@ doublereal enorm(const integer n, const doublereal *x)
 
     // Calculation of norm.
 
-    doublereal ret_val;
+    doublereal norm;
 
     if (s1 != 0.0)
     {
-        ret_val = x1max * sqrt(s1 + s2 / x1max / x1max);
+        norm = x1max * sqrt(s1 + s2 / x1max / x1max);
     }
     else if (s2 != 0.0)
     {
         if (s2 >= x3max)
         {
-            ret_val = sqrt(s2 * (1.0 + x3max / s2 * (x3max * s3)));
+            norm = sqrt(s2 * (1.0 + x3max / s2 * (x3max * s3)));
         }
         else
         {
-            ret_val = sqrt(x3max * (s2 / x3max + x3max * s3));
+            norm = sqrt(x3max * (s2 / x3max + x3max * s3));
         }
     }
     else
     {
-        ret_val = x3max * sqrt(s3);
+        norm = x3max * sqrt(s3);
     }
 
-    return ret_val;
+    return norm;
 }

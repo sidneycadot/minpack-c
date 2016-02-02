@@ -3,105 +3,99 @@
 
 #include <stdbool.h>
 #include <math.h>
+#include <float.h>
 #include "minpack_c.h"
 
-inline doublereal square(const doublereal x)
-{
-    return x * x;
-}
-
 void qrfac(
-        const integer  m,
-        const integer  n,
-        doublereal    *a,
-        const integer  lda,
-        const bool     pivot,
-        integer       *ipvt,
-        const integer  lipvt,
-        doublereal    *rdiag,
-        doublereal    *acnorm,
-        doublereal    *wa
+        const int   m,
+        const int   n,
+        double     *a,
+        const int   lda,
+        const bool  pivot,
+        int        *ipvt,
+        const int   lipvt,
+        double     *rdiag,
+        double     *acnorm,
+        double     *wa
     )
 {
-    //     this subroutine uses householder transformations with column */
-    //     pivoting (optional) to compute a qr factorization of the */
-    //     m by n matrix a. that is, qrfac determines an orthogonal */
-    //     matrix q, a permutation matrix p, and an upper trapezoidal */
-    //     matrix r with diagonal elements of nonincreasing magnitude, */
-    //     such that a*p = q*r. the householder transformation for */
-    //     column k, k = 1,2,...,min(m,n), is of the form */
+    // This subroutine uses householder transformations with column
+    // pivoting (optional) to compute a qr factorization of the
+    // m by n matrix a. That is, qrfac determines an orthogonal
+    // matrix q, a permutation matrix p, and an upper trapezoidal
+    // matrix r with diagonal elements of nonincreasing magnitude,
+    // such that a*p = q*r. The Householder transformation for
+    // column k, k = 1,2,...,min(m,n), is of the form
 
-    //                           t */
-    //           i - (1/u(k))*u*u */
+    //                       t
+    //       i - (1/u(k))*u*u
 
-    //     where u has zeros in the first k-1 positions. the form of */
-    //     this transformation and the method of pivoting first */
-    //     appeared in the corresponding linpack subroutine. */
+    // where u has zeros in the first k-1 positions. The form of
+    // this transformation and the method of pivoting first
+    // appeared in the corresponding linpack subroutine.
 
-    //     the subroutine statement is */
+    // The subroutine statement is
 
-    //       subroutine qrfac(m,n,a,lda,pivot,ipvt,lipvt,rdiag,acnorm,wa) */
+    //   subroutine qrfac(m,n,a,lda,pivot,ipvt,lipvt,rdiag,acnorm,wa)
 
-    //     where */
+    // where
 
-    //       m is a positive integer input variable set to the number */
-    //         of rows of a. */
+    //   m is a positive integer input variable set to the number
+    //     of rows of a.
 
-    //       n is a positive integer input variable set to the number */
-    //         of columns of a. */
+    //   n is a positive integer input variable set to the number
+    //     of columns of a.
 
-    //       a is an m by n array. on input a contains the matrix for */
-    //         which the qr factorization is to be computed. on output */
-    //         the strict upper trapezoidal part of a contains the strict */
-    //         upper trapezoidal part of r, and the lower trapezoidal */
-    //         part of a contains a factored form of q (the non-trivial */
-    //         elements of the u vectors described above). */
+    //   a is an m by n array. on input a contains the matrix for
+    //     which the qr factorization is to be computed. On output
+    //     the strict upper trapezoidal part of a contains the strict
+    //     upper trapezoidal part of r, and the lower trapezoidal
+    //     part of a contains a factored form of q (the non-trivial
+    //     elements of the u vectors described above).
 
-    //       lda is a positive integer input variable not less than m */
-    //         which specifies the leading dimension of the array a. */
+    //   lda is a positive integer input variable not less than m
+    //     which specifies the leading dimension of the array a.
 
-    //       pivot is a logical input variable. if pivot is set true, */
-    //         then column pivoting is enforced. if pivot is set false, */
-    //         then no column pivoting is done. */
+    //   pivot is a logical input variable. If pivot is set true,
+    //     then column pivoting is enforced. If pivot is set false,
+    //     then no column pivoting is done.
 
-    //       ipvt is an integer output array of length lipvt. ipvt */
-    //         defines the permutation matrix p such that a*p = q*r. */
-    //         column j of p is column ipvt(j) of the identity matrix. */
-    //         if pivot is false, ipvt is not referenced. */
+    //   ipvt is an integer output array of length lipvt. ipvt
+    //     defines the permutation matrix p such that a*p = q*r.
+    //     column j of p is column ipvt(j) of the identity matrix.
+    //     if pivot is false, ipvt is not referenced.
 
-    //       lipvt is a positive integer input variable. if pivot is false, */
-    //         then lipvt may be as small as 1. if pivot is true, then */
-    //         lipvt must be at least n. */
+    //   lipvt is a positive integer input variable. If pivot is false,
+    //     then lipvt may be as small as 1. if pivot is true, then
+    //     lipvt must be at least n.
 
-    //       rdiag is an output array of length n which contains the */
-    //         diagonal elements of r. */
+    //   rdiag is an output array of length n which contains the
+    //     diagonal elements of r.
 
-    //       acnorm is an output array of length n which contains the */
-    //         norms of the corresponding columns of the input matrix a. */
-    //         if this information is not needed, then acnorm can coincide */
-    //         with rdiag. */
+    //   acnorm is an output array of length n which contains the
+    //     norms of the corresponding columns of the input matrix a.
+    //     If this information is not needed, then acnorm can coincide
+    //     with rdiag.
 
-    //       wa is a work array of length n. if pivot is false, then wa */
-    //         can coincide with rdiag. */
+    //   wa is a work array of length n. If pivot is false, then wa
+    //     can coincide with rdiag.
 
-    //     subprograms called */
+    // Subprograms called:
 
-    //       minpack-supplied ... dpmpar,enorm */
+    //   MINPACK-supplied ... enorm
 
-    //       fortran-supplied ... dmax1,dsqrt,min0 */
-
-    //     argonne national laboratory. minpack project. march 1980. */
-    //     burton s. garbow, kenneth e. hillstrom, jorge j. more */
+    // Argonne National Laboratory. MINPACK project. March 1980.
+    // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 
     (void)lipvt; // unused
 
     // Initialized data.
 
-    const doublereal p05  = 0.05;
+    const double p05  = 0.05;
 
     // epsmch is the machine precision.
 
-    const doublereal epsmch = dpmpar_1;
+    const double epsmch = DBL_EPSILON;
 
     // Compute the initial column norms and initialize several arrays.
 
@@ -116,7 +110,7 @@ void qrfac(
 
     // Reduce a to r with householder transformations.
 
-    const integer minmn = (m < n) ? m : n; // minimum of m and n.
+    const int minmn = (m < n) ? m : n; // minimum of m and n.
 
     for (int j = 0; j < minmn; ++j)
     {
@@ -124,7 +118,7 @@ void qrfac(
         {
             // Bring the column of largest norm into the pivot position.
 
-            integer kmax = j;
+            int kmax = j;
 
             for (int k = j; k < n; ++k)
             {
@@ -138,7 +132,7 @@ void qrfac(
             {
                 for (int i = 0; i < m; ++i)
                 {
-                    doublereal swap = a[i + j * lda];
+                    double swap = a[i + j * lda];
                     a[i + j * lda] = a[i + kmax * lda];
                     a[i + kmax * lda] = swap;
                 }
@@ -155,7 +149,7 @@ void qrfac(
         // Compute the householder transformation to reduce the
         // j-th column of a to a multiple of the j-th unit vector.
 
-        doublereal ajnorm = enorm(m - j, &a[j + j * lda]);
+        double ajnorm = enorm(m - j, &a[j + j * lda]);
 
         if (ajnorm != 0.0)
         {
@@ -175,12 +169,12 @@ void qrfac(
 
             for (int k = (j+1); k < n; ++k)
             {
-                doublereal sum = 0.0;
+                double sum = 0.0;
                 for (int i = j; i < m; ++i)
                 {
                     sum += a[i + j * lda] * a[i + k * lda];
                 }
-                doublereal temp = sum / a[j + j * lda];
+                double temp = sum / a[j + j * lda];
 
                 for (int i = j; i < m; ++i)
                 {
@@ -189,8 +183,7 @@ void qrfac(
 
                 if (pivot && rdiag[k] != 0.0)
                 {
-                    doublereal temp = a[j + k * lda] / rdiag[k];
-                    rdiag[k] *= sqrt((fmax(0.0, 1.0 - square(temp))));
+                    rdiag[k] *= sqrt((fmax(0.0, 1.0 - square(a[j + k * lda] / rdiag[k]))));
 
                     if (p05 * square(rdiag[k] / wa[k]) <= epsmch)
                     {

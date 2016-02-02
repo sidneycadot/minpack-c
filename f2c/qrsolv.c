@@ -4,9 +4,19 @@
 #include <math.h>
 #include "minpack_c.h"
 
-void qrsolv(const integer n, doublereal *r, const integer ldr, const integer *ipvt, doublereal *diag, doublereal *qtb, doublereal *x, doublereal *sdiag, doublereal *wa)
+void qrsolv(
+        const int n,
+        double *r,
+        const int ldr,
+        const int *ipvt,
+        double *diag,
+        double *qtb,
+        double *x,
+        double *sdiag,
+        double *wa
+    )
 {
-    // given an m by n matrix a, an n by n diagonal matrix d,
+    // Given an m by n matrix a, an n by n diagonal matrix d,
     // and an m-vector b, the problem is to determine an x which
     // solves the system
 
@@ -14,21 +24,21 @@ void qrsolv(const integer n, doublereal *r, const integer ldr, const integer *ip
 
     // in the least squares sense.
 
-    // this subroutine completes the solution of the problem
+    // This subroutine completes the solution of the problem
     // if it is provided with the necessary information from the
-    // qr factorization, with column pivoting, of a. that is, if
+    // qr factorization, with column pivoting, of a. That is, if
     // a*p = q*r, where p is a permutation matrix, q has orthogonal
     // columns, and r is an upper triangular matrix with diagonal
     // elements of nonincreasing magnitude, then qrsolv expects
     // the full upper triangle of r, the permutation matrix p,
-    // and the first n components of (q transpose)*b. the system
+    // and the first n components of (q transpose)*b. The system
     // a*x = b, d*x = 0, is then equivalent to
 
     //              t       t
     //       r*z = q *b ,  p *d*p*z = 0 ,
 
-    // where x = p*z. if this system does not have full rank,
-    // then a least squares solution is obtained. on output qrsolv
+    // where x = p*z. If this system does not have full rank,
+    // then a least squares solution is obtained. On output qrsolv
     // also provides an upper triangular matrix s such that
 
     //        t   t               t
@@ -36,7 +46,7 @@ void qrsolv(const integer n, doublereal *r, const integer ldr, const integer *ip
 
     // s is computed within qrsolv and may be of separate interest.
 
-    // the subroutine statement is
+    // The subroutine statement is
 
     //   subroutine qrsolv(n,r,ldr,ipvt,diag,qtb,x,sdiag,wa)
 
@@ -46,7 +56,7 @@ void qrsolv(const integer n, doublereal *r, const integer ldr, const integer *ip
 
     //   r is an n by n array. on input the full upper triangle
     //     must contain the full upper triangle of the matrix r.
-    //     on output the full upper triangle is unaltered, and the
+    //     On output the full upper triangle is unaltered, and the
     //     strict lower triangle contains the strict upper triangle
     //     (transposed) of the upper triangular matrix s.
 
@@ -71,15 +81,11 @@ void qrsolv(const integer n, doublereal *r, const integer ldr, const integer *ip
 
     //   wa is a work array of length n.
 
-    // subprograms called
-
-    //   fortran-supplied ... dabs, dsqrt
-
-    // argonne national laboratory. minpack project. march 1980.
-    // burton s. garbow, kenneth e. hillstrom, jorge j. more
+    // Argonne National Laboratory. MINPACK project. March 1980.
+    // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 
     // Copy r and (q transpose) * b to preserve input and initialize s.
-    // in particular, save the diagonal elements of r in x.
+    // In particular, save the diagonal elements of r in x.
 
     for (int j = 0; j < n; ++j)
     {
@@ -109,32 +115,32 @@ void qrsolv(const integer n, doublereal *r, const integer ldr, const integer *ip
 
             sdiag[j] = diag[l];
 
-            // the transformations to eliminate the row of d
+            // The transformations to eliminate the row of d
             // modify only a single element of (q transpose) * b
             // beyond the first n, which is initially zero.
 
-            doublereal qtbpj = 0.0;
+            double qtbpj = 0.0;
 
             for (int k = j; k < n; ++k)
             {
-                // determine a givens rotation which eliminates the
+                // Determine a givens rotation which eliminates the
                 // appropriate element in the current row of d.
 
                 if (sdiag[k] != 0.0)
                 {
-                    doublereal sin__, cos__;
+                    double sin__, cos__;
 
                     if (fabs(r[k + k * ldr]) < fabs(sdiag[k]))
                     {
 
-                        const doublereal cotan = r[k + k * ldr] / sdiag[k];
+                        const double cotan = r[k + k * ldr] / sdiag[k];
 
                         sin__ = 1.0 / sqrt(1.0 + cotan * cotan);
                         cos__ = sin__ * cotan;
                     }
                     else
                     {
-                        const doublereal tan__ = sdiag[k] / r[k + k * ldr];
+                        const double tan__ = sdiag[k] / r[k + k * ldr];
                         cos__ = 1.0 / sqrt(1.0 + tan__ * tan__);
                         sin__ = cos__ * tan__;
                     }
@@ -144,7 +150,7 @@ void qrsolv(const integer n, doublereal *r, const integer ldr, const integer *ip
 
                     r[k + k * ldr] = cos__ * r[k + k * ldr] + sin__ * sdiag[k];
 
-                    const doublereal ww = wa[k];
+                    const double ww = wa[k];
 
                     wa[k] =  cos__ * ww + sin__ * qtbpj;
                     qtbpj = -sin__ * ww + cos__ * qtbpj;
@@ -153,7 +159,7 @@ void qrsolv(const integer n, doublereal *r, const integer ldr, const integer *ip
 
                     for (int i = k+1; i < n; ++i)
                     {
-                        const doublereal rr = r[i + k * ldr];
+                        const double rr = r[i + k * ldr];
 
                         r[i + k * ldr] =  cos__ * rr + sin__ * sdiag[i];
                         sdiag[i]       = -sin__ * rr + cos__ * sdiag[i];
@@ -162,17 +168,17 @@ void qrsolv(const integer n, doublereal *r, const integer ldr, const integer *ip
             }
         }
 
-        // store the diagonal element of s and restore
+        // Store the diagonal element of s and restore
         // the corresponding diagonal element of r.
 
         sdiag[j] = r[j + j * ldr];
         r[j + j * ldr] = x[j];
     }
 
-    // solve the triangular system for z. if the system is
+    // Solve the triangular system for z. if the system is
     // singular, then obtain a least squares solution.
 
-    integer nsing = n;
+    int nsing = n;
 
     for (int j = 0; j < n; ++j)
     {
@@ -191,7 +197,7 @@ void qrsolv(const integer n, doublereal *r, const integer ldr, const integer *ip
     {
         int j = nsing - k;
 
-        doublereal sum = 0.0;
+        double sum = 0.0;
 
         for (int i = j; i < nsing; ++i)
         {

@@ -42,7 +42,7 @@ double PY[20];
 /*         the user wants to terminate execution of lmder1. */
 /*         in this case set iflag to a negative integer. */
 
-void fcn(const integer m, const integer n, doublereal * x, doublereal *fvec, integer *iflag)
+void fcn(const int m, const int n, double * x, double *fvec, int *iflag)
 {
     printf("invocation fcn(m = %d, n = %d, x[], fvec[], iflag = %d)\n", m, n, *iflag);
     for (int i = 0; i < n; ++i)
@@ -131,16 +131,16 @@ void fcn(const integer m, const integer n, doublereal * x, doublereal *fvec, int
 
 int main(void)
 {
-    integer m = 20; // number of points?
-    integer n = 2; // number of parameters to solve for (2).
+    int m = 20; // number of points?
+    int n = 2; // number of parameters to solve for (2).
 
-    doublereal x[3];           // initial parameter guess and solution
-    doublereal fvec[1001];
-    doublereal tol = 1e-6;
-    integer    info;
-    integer    iwa[20];
-    doublereal wa[5001];
-    integer    lwa = 5000; // length of wa buffer
+    double x[3];           // initial parameter guess and solution
+    double fvec[1001];
+    double tol = 1e-6;
+    int    info;
+    int    iwa[20];
+    double wa[5001];
+    int    lwa = 5000; // length of wa buffer
 
     x[0] = 10.0;
     x[1] = 2.0;

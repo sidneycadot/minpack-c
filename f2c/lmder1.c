@@ -2,158 +2,134 @@
 #include "minpack_c.h"
 
 void lmder1(
-        lmder_fcn         fcn,
-        const integer     m,
-        const integer     n,
-        doublereal       *x,
-        doublereal       *fvec,
-        doublereal       *fjac,
-        const integer     ldfjac,
-        const doublereal  tol,
-        integer          *info,
-        integer          *ipvt,
-        doublereal       *wa,
-        const integer     lwa
+        lmder_fcn     fcn,
+        const int     m,
+        const int     n,
+        double       *x,
+        double       *fvec,
+        double       *fjac,
+        const int     ldfjac,
+        const double  tol,
+        int          *info,
+        int          *ipvt,
+        double       *wa,
+        const int     lwa
     )
 {
-    /*     subroutine lmder1 */
+    // The purpose of lmder1 is to minimize the sum of the squares of
+    // m nonlinear functions in n variables by a modification of the
+    // Levenberg-Marquardt algorithm. This is done by using the more
+    // general least-squares solver lmder. The user must provide a
+    // subroutine which calculates the functions and the Jacobian.
 
-    /*     the purpose of lmder1 is to minimize the sum of the squares of */
-    /*     m nonlinear functions in n variables by a modification of the */
-    /*     levenberg-marquardt algorithm. this is done by using the more */
-    /*     general least-squares solver lmder. the user must provide a */
-    /*     subroutine which calculates the functions and the jacobian. */
+    // The subroutine statement is
 
-    /*     the subroutine statement is */
+    //   subroutine lmder1(fcn,m,n,x,fvec,fjac,ldfjac,tol,info,
+    //                         ipvt,wa,lwa)
 
-    /*       subroutine lmder1(fcn,m,n,x,fvec,fjac,ldfjac,tol,info, */
-    /*                         ipvt,wa,lwa) */
+    // where
 
-    /*     where */
+    //   fcn is the name of the user-supplied subroutine which
+    //     calculates the functions and the Jacobian. fcn must
+    //     be declared in an external statement in the user
+    //     calling program, and should be written as follows.
 
-    /*       fcn is the name of the user-supplied subroutine which */
-    /*         calculates the functions and the jacobian. fcn must */
-    /*         be declared in an external statement in the user */
-    /*         calling program, and should be written as follows. */
+    //     subroutine fcn(m,n,x,fvec,fjac,ldfjac,iflag)
+    //     integer m,n,ldfjac,iflag
+    //     double precision x(n),fvec(m),fjac(ldfjac,n)
+    //     ----------
+    //     if iflag = 1 calculate the functions at x and
+    //     return this vector in fvec. Do not alter fjac.
+    //     if iflag = 2 calculate the jacobian at x and
+    //     return this matrix in fjac. Do not alter fvec.
+    //     ----------
+    //     return
+    //     end
 
-    /*         subroutine fcn(m,n,x,fvec,fjac,ldfjac,iflag) */
-    /*         integer m,n,ldfjac,iflag */
-    /*         double precision x(n),fvec(m),fjac(ldfjac,n) */
-    /*         ---------- */
-    /*         if iflag = 1 calculate the functions at x and */
-    /*         return this vector in fvec. do not alter fjac. */
-    /*         if iflag = 2 calculate the jacobian at x and */
-    /*         return this matrix in fjac. do not alter fvec. */
-    /*         ---------- */
-    /*         return */
-    /*         end */
+    //     The value of iflag should not be changed by fcn unless
+    //     the user wants to terminate execution of lmder1.
+    //     In this case set iflag to a negative integer.
 
-    /*         the value of iflag should not be changed by fcn unless */
-    /*         the user wants to terminate execution of lmder1. */
-    /*         in this case set iflag to a negative integer. */
+    //   m is a positive integer input variable set to the number
+    //     of functions.
 
-    /*       m is a positive integer input variable set to the number */
-    /*         of functions. */
+    //   n is a positive integer input variable set to the number
+    //     of variables. n must not exceed m.
 
-    /*       n is a positive integer input variable set to the number */
-    /*         of variables. n must not exceed m. */
+    //   x is an array of length n. On input x must contain
+    //     an initial estimate of the solution vector. On output x
+    //     contains the final estimate of the solution vector.
 
-    /*       x is an array of length n. on input x must contain */
-    /*         an initial estimate of the solution vector. on output x */
-    /*         contains the final estimate of the solution vector. */
+    //   fvec is an output array of length m which contains
+    //     the functions evaluated at the output x.
 
-    /*       fvec is an output array of length m which contains */
-    /*         the functions evaluated at the output x. */
+    //   fjac is an output m by n array. The upper n by n submatrix
+    //     of fjac contains an upper triangular matrix r with
+    //     diagonal elements of nonincreasing magnitude such that
 
-    /*       fjac is an output m by n array. the upper n by n submatrix */
-    /*         of fjac contains an upper triangular matrix r with */
-    /*         diagonal elements of nonincreasing magnitude such that */
+    //            t     t           t
+    //           p *(jac *jac)*p = r *r,
 
-    /*                t     t           t */
-    /*               p *(jac *jac)*p = r *r, */
+    //     where p is a permutation matrix and jac is the final
+    //     calculated jacobian. Column j of p is column ipvt(j)
+    //     (see below) of the identity matrix. The lower trapezoidal
+    //     part of fjac contains information generated during
+    //     the computation of r.
 
-    /*         where p is a permutation matrix and jac is the final */
-    /*         calculated jacobian. column j of p is column ipvt(j) */
-    /*         (see below) of the identity matrix. the lower trapezoidal */
-    /*         part of fjac contains information generated during */
-    /*         the computation of r. */
+    //   ldfjac is a positive integer input variable not less than m
+    //     which specifies the leading dimension of the array fjac.
 
-    /*       ldfjac is a positive integer input variable not less than m */
-    /*         which specifies the leading dimension of the array fjac. */
+    //   tol is a nonnegative input variable. Termination occurs
+    //     when the algorithm estimates either that the relative
+    //     error in the sum of squares is at most tol or that
+    //     the relative error between x and the solution is at
+    //     most tol.
 
-    /*       tol is a nonnegative input variable. termination occurs */
-    /*         when the algorithm estimates either that the relative */
-    /*         error in the sum of squares is at most tol or that */
-    /*         the relative error between x and the solution is at */
-    /*         most tol. */
+    //   info is an integer output variable. If the user has
+    //     terminated execution, info is set to the (negative)
+    //     value of iflag. See description of fcn. Otherwise,
+    //     info is set as follows.
 
-    /*       info is an integer output variable. if the user has */
-    /*         terminated execution, info is set to the (negative) */
-    /*         value of iflag. see description of fcn. otherwise, */
-    /*         info is set as follows. */
+    //     info = 0  improper input parameters.
 
-    /*         info = 0  improper input parameters. */
+    //     info = 1  algorithm estimates that the relative error
+    //               in the sum of squares is at most tol.
 
-    /*         info = 1  algorithm estimates that the relative error */
-    /*                   in the sum of squares is at most tol. */
+    //     info = 2  algorithm estimates that the relative error
+    //               between x and the solution is at most tol.
 
-    /*         info = 2  algorithm estimates that the relative error */
-    /*                   between x and the solution is at most tol. */
+    //     info = 3  conditions for info = 1 and info = 2 both hold.
 
-    /*         info = 3  conditions for info = 1 and info = 2 both hold. */
+    //     info = 4  fvec is orthogonal to the columns of the
+    //               jacobian to machine precision.
 
-    /*         info = 4  fvec is orthogonal to the columns of the */
-    /*                   jacobian to machine precision. */
+    //     info = 5  number of calls to fcn with iflag = 1 has
+    //               reached 100*(n+1).
 
-    /*         info = 5  number of calls to fcn with iflag = 1 has */
-    /*                   reached 100*(n+1). */
+    //     info = 6  tol is too small. No further reduction in
+    //               the sum of squares is possible.
 
-    /*         info = 6  tol is too small. no further reduction in */
-    /*                   the sum of squares is possible. */
+    //     info = 7  tol is too small. No further improvement in
+    //               the approximate solution x is possible.
 
-    /*         info = 7  tol is too small. no further improvement in */
-    /*                   the approximate solution x is possible. */
+    //   ipvt is an integer output array of length n. ipvt
+    //     defines a permutation matrix p such that jac*p = q*r,
+    //     where jac is the final calculated Jacobian, q is
+    //     orthogonal (not stored), and r is upper triangular
+    //     with diagonal elements of nonincreasing magnitude.
+    //     Column j of p is column ipvt(j) of the identity matrix.
 
-    /*       ipvt is an integer output array of length n. ipvt */
-    /*         defines a permutation matrix p such that jac*p = q*r, */
-    /*         where jac is the final calculated jacobian, q is */
-    /*         orthogonal (not stored), and r is upper triangular */
-    /*         with diagonal elements of nonincreasing magnitude. */
-    /*         column j of p is column ipvt(j) of the identity matrix. */
+    //   wa is a work array of length lwa.
 
-    /*       wa is a work array of length lwa. */
+    //   lwa is a positive integer input variable not less than 5*n+m.
 
-    /*       lwa is a positive integer input variable not less than 5*n+m. */
+    // Subprograms called:
 
-    /*     subprograms called */
+    //   user-supplied ...... fcn
+    //   MINPACK-supplied ... lmder
 
-    /*       user-supplied ...... fcn */
-
-    /*       minpack-supplied ... lmder */
-
-    /*     argonne national laboratory. minpack project. march 1980. */
-    /*     burton s. garbow, kenneth e. hillstrom, jorge j. more */
-
-    // Initialized data.
-
-    const doublereal factor = 100.;
-
-    // System generated locals.
-
-    integer fjac_dim1, fjac_offset;
-
-    // Local variables.
-
-    integer nfev;
-    integer njev;
-
-    // Parameter adjustments.
-
-    fjac_dim1 = ldfjac;
-    fjac_offset = 1 + fjac_dim1;
-    fjac -= fjac_offset;
-
-    // Function body.
+    // Argonne National Laboratory. MINPACK project. March 1980.
+    // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 
     *info = 0;
 
@@ -164,14 +140,17 @@ void lmder1(
         return;
     }
 
-    // call lmder().
+    // Call lmder().
 
-    const integer maxfev = (n + 1) * 100;
-    const doublereal ftol   = tol;
-    const doublereal xtol   = tol;
-    const doublereal gtol   = 0.0;
-    const integer mode   = 1;
-    const integer nprint = 0;
+    int nfev, njev; // Calculated but not used.
+
+    const int    maxfev = (n + 1) * 100;
+    const double ftol   = tol;
+    const double xtol   = tol;
+    const double gtol   = 0.0;
+    const int    mode   = 1;
+    const double factor = 100.0;
+    const int    nprint = 0;
 
     lmder(
         fcn,
@@ -179,7 +158,7 @@ void lmder1(
         n,
         x,
         fvec,
-        &fjac[fjac_offset],
+        fjac,
         ldfjac,
         ftol,
         xtol,

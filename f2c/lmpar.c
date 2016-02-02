@@ -2,134 +2,129 @@
 // lmpar.f -- translated by f2c (version 20100827).
 
 #include <math.h>
+#include <float.h>
 #include "minpack_c.h"
 
 void lmpar(
-        const integer  n,
-        doublereal    *r,
-        const integer  ldr,
-        integer       *ipvt,
-        doublereal    *diag,
-        doublereal    *qtb,
-        doublereal    *delta,
-        doublereal    *par,
-        doublereal    *x,
-        doublereal    *sdiag,
-        doublereal    *wa1,
-        doublereal    *wa2
+        const int  n,
+        double    *r,
+        const int  ldr,
+        int       *ipvt,
+        double    *diag,
+        double    *qtb,
+        double    *delta,
+        double    *par,
+        double    *x,
+        double    *sdiag,
+        double    *wa1,
+        double    *wa2
     )
 {
-    //     given an m by n matrix a, an n by n nonsingular diagonal */
-    //     matrix d, an m-vector b, and a positive number delta, */
-    //     the problem is to determine a value for the parameter */
-    //     par such that if x solves the system */
+    // Given an m by n matrix a, an n by n nonsingular diagonal
+    // matrix d, an m-vector b, and a positive number delta,
+    // the problem is to determine a value for the parameter
+    // par such that if x solves the system
 
-    //           a*x = b ,     sqrt(par)*d*x = 0 , */
+    //       a*x = b ,     sqrt(par)*d*x = 0 ,
 
-    //     in the least squares sense, and dxnorm is the euclidean */
-    //     norm of d*x, then either par is zero and */
+    // In the least squares sense, and dxnorm is the euclidean
+    // norm of d*x, then either par is zero and
 
-    //           (dxnorm-delta) .le. 0.1*delta , */
+    //       (dxnorm-delta) .le. 0.1*delta ,
 
-    //     or par is positive and */
+    // or par is positive and
 
-    //           abs(dxnorm-delta) .le. 0.1*delta . */
+    //       abs(dxnorm-delta) .le. 0.1*delta .
 
-    //     this subroutine completes the solution of the problem */
-    //     if it is provided with the necessary information from the */
-    //     qr factorization, with column pivoting, of a. that is, if */
-    //     a*p = q*r, where p is a permutation matrix, q has orthogonal */
-    //     columns, and r is an upper triangular matrix with diagonal */
-    //     elements of nonincreasing magnitude, then lmpar expects */
-    //     the full upper triangle of r, the permutation matrix p, */
-    //     and the first n components of (q transpose)*b. on output */
-    //     lmpar also provides an upper triangular matrix s such that */
+    // This subroutine completes the solution of the problem
+    // if it is provided with the necessary information from the
+    // qr factorization, with column pivoting, of a. That is, if
+    // a*p = q*r, where p is a permutation matrix, q has orthogonal
+    // columns, and r is an upper triangular matrix with diagonal
+    // elements of nonincreasing magnitude, then lmpar expects
+    // the full upper triangle of r, the permutation matrix p,
+    // and the first n components of (q transpose)*b. On output
+    // lmpar also provides an upper triangular matrix s such that
 
-    //            t   t                   t */
-    //           p *(a *a + par*d*d)*p = s *s . */
+    //        t   t                   t
+    //       p *(a *a + par*d*d)*p = s *s .
 
-    //     s is employed within lmpar and may be of separate interest. */
+    // s is employed within lmpar and may be of separate interest.
 
-    //     only a few iterations are generally needed for convergence */
-    //     of the algorithm. if, however, the limit of 10 iterations */
-    //     is reached, then the output par will contain the best */
-    //     value obtained so far. */
+    // Only a few iterations are generally needed for convergence
+    // of the algorithm. If, however, the limit of 10 iterations
+    // is reached, then the output par will contain the best
+    // value obtained so far.
 
-    //     the subroutine statement is */
+    // The subroutine statement is
 
-    //       subroutine lmpar(n,r,ldr,ipvt,diag,qtb,delta,par,x,sdiag, */
-    //                        wa1,wa2) */
+    //   subroutine lmpar(n,r,ldr,ipvt,diag,qtb,delta,par,x,sdiag,
+    //                    wa1,wa2)
 
-    //     where */
+    // where
 
-    //       n is a positive integer input variable set to the order of r. */
+    //   n is a positive integer input variable set to the order of r.
 
-    //       r is an n by n array. on input the full upper triangle */
-    //         must contain the full upper triangle of the matrix r. */
-    //         on output the full upper triangle is unaltered, and the */
-    //         strict lower triangle contains the strict upper triangle */
-    //         (transposed) of the upper triangular matrix s. */
+    //   r is an n by n array. On input the full upper triangle
+    //     must contain the full upper triangle of the matrix r.
+    //     On output the full upper triangle is unaltered, and the
+    //     strict lower triangle contains the strict upper triangle
+    //     (transposed) of the upper triangular matrix s.
 
-    //       ldr is a positive integer input variable not less than n */
-    //         which specifies the leading dimension of the array r. */
+    //   ldr is a positive integer input variable not less than n
+    //     which specifies the leading dimension of the array r.
 
-    //       ipvt is an integer input array of length n which defines the */
-    //         permutation matrix p such that a*p = q*r. column j of p */
-    //         is column ipvt(j) of the identity matrix. */
+    //   ipvt is an integer input array of length n which defines the
+    //     permutation matrix p such that a*p = q*r. Column j of p
+    //     is column ipvt(j) of the identity matrix.
 
-    //       diag is an input array of length n which must contain the */
-    //         diagonal elements of the matrix d. */
+    //   diag is an input array of length n which must contain the
+    //     diagonal elements of the matrix d.
 
-    //       qtb is an input array of length n which must contain the first */
-    //         n elements of the vector (q transpose)*b. */
+    //   qtb is an input array of length n which must contain the first
+    //     n elements of the vector (q transpose)*b.
 
-    //       delta is a positive input variable which specifies an upper */
-    //         bound on the euclidean norm of d*x. */
+    //   delta is a positive input variable which specifies an upper
+    //     bound on the euclidean norm of d*x.
 
-    //       par is a nonnegative variable. on input par contains an */
-    //         initial estimate of the levenberg-marquardt parameter. */
-    //         on output par contains the final estimate. */
+    //   par is a nonnegative variable. On input par contains an
+    //     initial estimate of the Levenberg-Marquardt parameter.
+    //     on output par contains the final estimate.
 
-    //       x is an output array of length n which contains the least */
-    //         squares solution of the system a*x = b, sqrt(par)*d*x = 0, */
-    //         for the output par. */
+    //   x is an output array of length n which contains the least
+    //     squares solution of the system a*x = b, sqrt(par)*d*x = 0,
+    //     for the output par.
 
-    //       sdiag is an output array of length n which contains the */
-    //         diagonal elements of the upper triangular matrix s. */
+    //   sdiag is an output array of length n which contains the
+    //     diagonal elements of the upper triangular matrix s.
 
-    //       wa1 and wa2 are work arrays of length n. */
+    //   wa1 and wa2 are work arrays of length n.
 
-    //     subprograms called */
+    // Subprograms called:
 
-    //       minpack-supplied ... dpmpar,enorm,qrsolv */
+    //   MINPACK-supplied ... enorm, qrsolv
 
-    //       fortran-supplied ... dabs,dmax1,dmin1,dsqrt */
+    // Argonne National Laboratory. MINPACK project. March 1980.
+    // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 
-    //     argonne national laboratory. minpack project. march 1980. */
-    //     burton s. garbow, kenneth e. hillstrom, jorge j. more */
+    const double p1   = 0.1;
+    const double p001 = 0.001;
 
-    // Initialized data.
-
-    const doublereal p1   = 0.1;
-    const doublereal p001 = 0.001;
-
-    // Local variables.
-
-    doublereal fp;
-    doublereal parc, parl;
-    integer iter;
-    doublereal temp, paru;
-    doublereal gnorm;
-    doublereal dxnorm;
+    double fp;
+    double parc, parl;
+    int iter;
+    double temp, paru;
+    double gnorm;
+    double dxnorm;
 
     // dwarf is the smallest positive magnitude.
 
-    const doublereal dwarf = dpmpar_2;
+    const double dwarf = DBL_MIN;
 
     // compute and store in x the gauss-newton direction. if the
     // jacobian is rank-deficient, obtain a least squares solution.
 
-    integer nsing = n;
+    int nsing = n;
 
     for (int j = 0; j < n; ++j)
     {
@@ -165,8 +160,8 @@ void lmpar(
         x[l] = wa1[j];
     }
 
-    // initialize the iteration counter.
-    // evaluate the function at the origin, and test
+    // Initialize the iteration counter.
+    // Evaluate the function at the origin, and test
     // for acceptance of the gauss-newton direction.
 
     iter = 0;
@@ -182,9 +177,9 @@ void lmpar(
         goto L_TERMINATE;
     }
 
-    // if the jacobian is not rank deficient, the newton
+    // If the Jacobian is not rank deficient, the newton
     // step provides a lower bound, parl, for the zero of
-    // the function. otherwise set this bound to zero.
+    // the function. Otherwise set this bound to zero.
 
     parl = 0.0;
     if (nsing >= n)
@@ -197,7 +192,7 @@ void lmpar(
 
         for (int j = 0; j < n; ++j)
         {
-            doublereal sum = 0.0;
+            double sum = 0.0;
 
             for (int i = 0; i < j; ++i)
             {
@@ -214,7 +209,7 @@ void lmpar(
 
     for (int j = 0; j < n; ++j)
     {
-        doublereal sum = 0.0;
+        double sum = 0.0;
 
         for (int i = 0; i < j + 1; ++i)
         {
@@ -248,7 +243,7 @@ void lmpar(
     {
         ++iter;
 
-        /* evaluate the function at the current value of par. */
+        // Evaluate the function at the current value of par.
 
         if (*par == 0.0)
         {
@@ -273,8 +268,8 @@ void lmpar(
         temp = fp;
         fp = dxnorm - *delta;
 
-        // if the function is small enough, accept the current value
-        // of par. also test for the exceptional cases where parl
+        // If the function is small enough, accept the current value
+        // of par. Also test for the exceptional cases where parl
         // is zero or the number of iterations has reached 10.
 
         if (fabs(fp) <= p1 * *delta || (parl == 0.0 && fp <= temp && temp < 0.0) || iter == 10)
@@ -282,7 +277,7 @@ void lmpar(
             break;
         }
 
-        // compute the newton correction.
+        // Compute the newton correction.
 
         for (int j = 0; j < n; ++j)
         {
@@ -323,7 +318,7 @@ void lmpar(
 
 L_TERMINATE:
 
-    // termination.
+    // Termination.
 
     if (iter == 0)
     {

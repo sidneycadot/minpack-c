@@ -6,152 +6,152 @@
 
 #include <stdbool.h>
 
-typedef int integer;
-typedef double doublereal;
+typedef void (*lmder_fcn)(const int m, const int n, double * x, double * fvec, double * fjac, const int ldfjac, int * iflag);
+typedef void (*lmdif_fcn)(const int m, const int n, double * x, double * fvec,                                  int * iflag);
 
-#include "dpmpar.h"
+inline double square(const double x)
+{
+    return x * x;
+}
 
-typedef void (*lmder_fcn)(const integer m, const integer n, doublereal *, doublereal *, doublereal *, const integer, integer *);
-typedef void (*lmdif_fcn)(const integer m, const integer n, doublereal * x, doublereal * fvec, integer * iflag);
-
-doublereal enorm(
-        const integer n,
-        const doublereal * x
+double enorm(
+        const int     n,
+        const double *x
     );
 
 void qrsolv(
-        const integer  n,
-        doublereal    *r,
-        const integer  ldr,
-        const integer *ipvt,
-        doublereal    *diag,
-        doublereal    *qtb,
-        doublereal    *x,
-        doublereal    *sdiag,
-        doublereal    *wa
+        const int     n,
+        double       *r,
+        const int     ldr,
+        const int    *ipvt,
+        double       *diag,
+        double       *qtb,
+        double       *x,
+        double       *sdiag,
+        double       *wa
     );
 
 void fdjac2(
-        lmdif_fcn         fcn,
-        const integer     m,
-        const integer     n,
-        doublereal       *x,
-        const doublereal *fvec,
-        doublereal       *fjac,
-        const integer     ldfjac,
-        integer          *iflag,
-        const doublereal  epsfcn,
-        doublereal       *wa
+        lmdif_fcn     fcn,
+        const int     m,
+        const int     n,
+        double       *x,
+        const double *fvec,
+        double       *fjac,
+        const int     ldfjac,
+        int          *iflag,
+        const double  epsfcn,
+        double       *wa
     );
 
 void lmpar(
-        const integer     n,
-        doublereal       *r,
-        const integer     ldr,
-        integer          *ipvt,
-        doublereal       *diag,
-        doublereal       *qtb,
-        doublereal       *delta,
-        doublereal       *par,
-        doublereal       *x,
-        doublereal       *sdiag,
-        doublereal       *wa1,
-        doublereal       *wa2
+        const int     n,
+        double       *r,
+        const int     ldr,
+        int          *ipvt,
+        double       *diag,
+        double       *qtb,
+        double       *delta,
+        double       *par,
+        double       *x,
+        double       *sdiag,
+        double       *wa1,
+        double       *wa2
     );
 
 void qrfac(
-        const integer     m,
-        const integer     n,
-        doublereal       *a,
-        const integer     lda,
-        const bool        pivot,
-        integer          *ipvt,
-        const integer     lipvt,
-        doublereal       *rdiag,
-        doublereal       *acnorm,
-        doublereal       *wa
+        const int     m,
+        const int     n,
+        double       *a,
+        const int     lda,
+        const bool    pivot,
+        int          *ipvt,
+        const int     lipvt,
+        double       *rdiag,
+        double       *acnorm,
+        double       *wa
     );
 
 void lmder(
-        lmder_fcn         fcn,
-        const integer     m,
-        const integer     n,
-        doublereal       *x,
-        doublereal       *fvec,
-        doublereal       *fjac,
-        const integer     ldfjac,
-        const doublereal  ftol,
-        const doublereal  xtol,
-        const doublereal  gtol,
-        const integer     maxfev,
-        doublereal       *diag,
-        const integer     mode,
-        const doublereal  factor,
-        const integer     nprint,
-        integer          *info,
-        integer          *nfev,
-        integer          *njev,
-        integer          *ipvt,
-        doublereal       *qtf,
-        doublereal       *wa1,
-        doublereal       *wa2,
-        doublereal       *wa3,
-        doublereal       *wa4
+        lmder_fcn     fcn,
+        const int     m,
+        const int     n,
+        double       *x,
+        double       *fvec,
+        double       *fjac,
+        const int     ldfjac,
+        const double  ftol,
+        const double  xtol,
+        const double  gtol,
+        const int     maxfev,
+        double       *diag,
+        const int     mode,
+        const double  factor,
+        const int     nprint,
+        int          *info,
+        int          *nfev,
+        int          *njev,
+        int          *ipvt,
+        double       *qtf,
+        double       *wa1,
+        double       *wa2,
+        double       *wa3,
+        double       *wa4
     );
 
 void lmder1(
-        lmder_fcn         fcn,
-        const integer     m,
-        const integer     n,
-        doublereal       *x,
-        doublereal       *fvec,
-        doublereal       *fjac,
-        const integer     ldfjac,
-        const doublereal  tol,
-        integer          *info,
-        integer          *ipvt,
-        doublereal       *wa,
-        const integer     lwa
+        lmder_fcn     fcn,
+        const int     m,
+        const int     n,
+        double       *x,
+        double       *fvec,
+        double       *fjac,
+        const int     ldfjac,
+        const double  tol,
+        int          *info,
+        int          *ipvt,
+        double       *wa,
+        const int     lwa
     );
 
 void lmdif(
-        lmdif_fcn         fcn,
-        const integer     m,
-        const integer     n,
-        doublereal       *x,
-        doublereal       *fvec,
-        const doublereal  ftol,
-        const doublereal  xtol,
-        const doublereal  gtol,
-        const integer     maxfev,
-        const doublereal  epsfcn,
-        doublereal       *diag,
-        const integer     mode,
-        const doublereal  factor,
-        const integer     nprint,
-        integer          *info,
-        integer          *nfev,
-        doublereal       *fjac,
-        const integer     ldfjac,
-        integer          *ipvt,
-        doublereal       *qtf,
-        doublereal       *wa1,
-        doublereal       *wa2,
-        doublereal       *wa3,
-        doublereal       *wa4
+        lmdif_fcn     fcn,
+        const int     m,
+        const int     n,
+        double       *x,
+        double       *fvec,
+        const double  ftol,
+        const double  xtol,
+        const double  gtol,
+        const int     maxfev,
+        const double  epsfcn,
+        double       *diag,
+        const int     mode,
+        const double  factor,
+        const int     nprint,
+        int          *info,
+        int          *nfev,
+        double       *fjac,
+        const int     ldfjac,
+        int          *ipvt,
+        double       *qtf,
+        double       *wa1,
+        double       *wa2,
+        double       *wa3,
+        double       *wa4
     );
 
 void lmdif1(
-        lmdif_fcn         fcn,
-        const integer     m,
-        const integer     n,
-        doublereal       *x,
-        doublereal       *fvec,
-        const doublereal  tol,
-        integer          *info,
-        integer          *iwa,
-        doublereal       *wa,
-        const integer     lwa
+        lmdif_fcn     fcn,
+        const int     m,
+        const int     n,
+        double       *x,
+        double       *fvec,
+        const double  tol,
+        int          *info,
+        int          *iwa,
+        double       *wa,
+        const int     lwa
     );
 
 #endif // minpack_c_h

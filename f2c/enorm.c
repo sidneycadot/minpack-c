@@ -35,11 +35,12 @@ double enorm(const int n, const double *x)
     // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 
     const double rdwarf = 3.834e-20;
-    const double rgiant = 1.304e19;
+    const double rgiant = 1.304e+19;
 
-    double s1    = 0.0;
-    double s2    = 0.0;
-    double s3    = 0.0;
+    double s1 = 0.0;
+    double s2 = 0.0;
+    double s3 = 0.0;
+
     double x1max = 0.0;
     double x3max = 0.0;
 
@@ -47,7 +48,7 @@ double enorm(const int n, const double *x)
 
     for (int i = 0; i < n; ++i)
     {
-        double xabs = fabs(x[i]);
+        const double xabs = fabs(x[i]);
 
         if (xabs <= rdwarf)
         {

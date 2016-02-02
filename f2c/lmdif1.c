@@ -54,7 +54,7 @@ void lmdif1(
     //   n is a positive integer input variable set to the number
     //     of variables. n must not exceed m.
 
-    //   x is an array of length n. on input x must contain
+    //   x is an array of length n. On input x must contain
     //     an initial estimate of the solution vector. On output x
     //     contains the final estimate of the solution vector.
 
@@ -69,7 +69,7 @@ void lmdif1(
 
     //   info is an integer output variable. If the user has
     //     terminated execution, info is set to the (negative)
-    //     value of iflag. see description of fcn. Otherwise,
+    //     value of iflag. See description of fcn. Otherwise,
     //     info is set as follows.
 
     //     info = 0  improper input parameters.
@@ -113,7 +113,7 @@ void lmdif1(
 
     // Check the input parameters for errors.
 
-    if (n <= 0 || m < n || tol < 0 || lwa < m * n + n * 5 + m)
+    if (n <= 0 || m < n || tol < 0.0 || lwa < m * n + n * 5 + m)
     {
         return;
     }
@@ -131,14 +131,32 @@ void lmdif1(
 
     int nfev; // Calculated but not used.
 
-    lmdif(fcn, m, n, x, fvec, ftol, xtol, gtol, maxfev, epsfcn, wa, mode, factor, nprint, info, &nfev,
-          &wa[n * 5 + m],
-          m, iwa,
-          &wa[n * 1],
-          &wa[n * 2],
-          &wa[n * 3],
-          &wa[n * 4],
-          &wa[n * 5]);
+    lmdif(
+        fcn,
+        m,
+        n,
+        x,
+        fvec,
+        ftol,
+        xtol,
+        gtol,
+        maxfev,
+        epsfcn,
+        wa,
+        mode,
+        factor,
+        nprint,
+        info,
+        &nfev,
+        &wa[m + n * 5],
+        m,
+        iwa,
+        &wa[n],
+        &wa[n * 2],
+        &wa[n * 3],
+        &wa[n * 4],
+        &wa[n * 5]
+    );
 
     if (*info == 8)
     {

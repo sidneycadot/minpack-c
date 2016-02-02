@@ -81,27 +81,22 @@ void fdjac2(
 
     //   user-supplied ...... fcn
 
-    // Argonne national laboratory. MINPACK project. March 1980.
+    // Argonne National Laboratory. MINPACK project. March 1980.
     // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 
-    // epsmch is the machine precision.
-
-    const double epsmch = DBL_EPSILON;
-
-    const double eps = sqrt(fmax(epsfcn, epsmch));
+    const double eps = sqrt(fmax(epsfcn, DBL_EPSILON));
 
     for (int j = 0; j < n; ++j)
     {
         const double save_xj = x[j]; // save x[j]
 
         double h = eps * fabs(save_xj);
-
         if (h == 0.0)
         {
             h = eps;
         }
 
-        x[j] = save_xj + h; // temporarily alter x
+        x[j] = save_xj + h; // temporarily alter x[j]
 
         (*fcn)(m, n, x, wa, iflag);
 
@@ -114,7 +109,7 @@ void fdjac2(
 
         for (int i = 0; i < m; ++i)
         {
-            fjac[i + j * ldfjac] = (wa[i] - fvec[i]) / h; // set jacobian value.
+            fjac[i + j * ldfjac] = (wa[i] - fvec[i]) / h; // set Jacobian value.
         }
     }
 }

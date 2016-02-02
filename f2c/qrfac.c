@@ -46,7 +46,7 @@ void qrfac(
     //   n is a positive integer input variable set to the number
     //     of columns of a.
 
-    //   a is an m by n array. on input a contains the matrix for
+    //   a is an m by n array. On input a contains the matrix for
     //     which the qr factorization is to be computed. On output
     //     the strict upper trapezoidal part of a contains the strict
     //     upper trapezoidal part of r, and the lower trapezoidal
@@ -63,10 +63,10 @@ void qrfac(
     //   ipvt is an integer output array of length lipvt. ipvt
     //     defines the permutation matrix p such that a*p = q*r.
     //     column j of p is column ipvt(j) of the identity matrix.
-    //     if pivot is false, ipvt is not referenced.
+    //     If pivot is false, ipvt is not referenced.
 
     //   lipvt is a positive integer input variable. If pivot is false,
-    //     then lipvt may be as small as 1. if pivot is true, then
+    //     then lipvt may be as small as 1. If pivot is true, then
     //     lipvt must be at least n.
 
     //   rdiag is an output array of length n which contains the
@@ -87,15 +87,8 @@ void qrfac(
     // Argonne National Laboratory. MINPACK project. March 1980.
     // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 
-    (void)lipvt; // unused
-
-    // Initialized data.
-
+    (void)lipvt; // Unused parameter.
     const double p05  = 0.05;
-
-    // epsmch is the machine precision.
-
-    const double epsmch = DBL_EPSILON;
 
     // Compute the initial column norms and initialize several arrays.
 
@@ -104,11 +97,11 @@ void qrfac(
         wa[j] = rdiag[j] = acnorm[j] = enorm(m, &a[j * lda]);
         if (pivot)
         {
-            ipvt[j] = j + 1;
+            ipvt[j] = (j + 1); // NOTE: 1-based index!!!
         }
     }
 
-    // Reduce a to r with householder transformations.
+    // Reduce a to r with Householder transformations.
 
     const int minmn = (m < n) ? m : n; // minimum of m and n.
 
@@ -128,11 +121,11 @@ void qrfac(
                 }
             }
 
-            if (kmax != j) // Exchange columns (kmax) and (j).
+            if (kmax != j)
             {
                 for (int i = 0; i < m; ++i)
                 {
-                    double swap = a[i + j * lda];
+                    const double swap = a[i + j * lda];
                     a[i + j * lda] = a[i + kmax * lda];
                     a[i + kmax * lda] = swap;
                 }
@@ -140,13 +133,13 @@ void qrfac(
                 rdiag[kmax] = rdiag[j];
                 wa[kmax] = wa[j];
 
-                int swap = ipvt[j];
+                const int swap = ipvt[j];
                 ipvt[j] = ipvt[kmax];
                 ipvt[kmax] = swap;
             }
         }
 
-        // Compute the householder transformation to reduce the
+        // Compute the Householder transformation to reduce the
         // j-th column of a to a multiple of the j-th unit vector.
 
         double ajnorm = enorm(m - j, &a[j + j * lda]);
@@ -165,16 +158,19 @@ void qrfac(
 
             a[j + j * lda] += 1.0;
 
-            // Apply the transformation to the remaining columns and update the norms.
+            // Apply the transformation to the remaining columns
+            // and update the norms.
 
-            for (int k = (j+1); k < n; ++k)
+            for (int k = (j + 1); k < n; ++k)
             {
                 double sum = 0.0;
+
                 for (int i = j; i < m; ++i)
                 {
                     sum += a[i + j * lda] * a[i + k * lda];
                 }
-                double temp = sum / a[j + j * lda];
+
+                const double temp = sum / a[j + j * lda];
 
                 for (int i = j; i < m; ++i)
                 {
@@ -183,12 +179,12 @@ void qrfac(
 
                 if (pivot && rdiag[k] != 0.0)
                 {
-                    rdiag[k] *= sqrt((fmax(0.0, 1.0 - square(a[j + k * lda] / rdiag[k]))));
+                    rdiag[k] *= sqrt(fmax(0.0, 1.0 - square(a[j + k * lda] / rdiag[k])));
 
-                    if (p05 * square(rdiag[k] / wa[k]) <= epsmch)
+                    if (p05 * square(rdiag[k] / wa[k]) <= DBL_EPSILON)
                     {
-                        rdiag[k] = enorm(m - j + 1, &a[j + 1 + k * lda]);
-                        wa[k] = rdiag[k];
+                        // TODO: check correctness
+                        wa[k] = rdiag[k] = enorm(m - (j + 1), &a[(j + 1) + k * lda]);
                     }
                 }
             }

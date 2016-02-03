@@ -215,7 +215,7 @@ void lmdif(
     int iter;
     double temp, temp1, temp2;
     int iflag;
-    double delta;
+    double delta = 0.0;
     double ratio;
     double fnorm, gnorm;
     double pnorm, xnorm = 0.0, fnorm1;
@@ -409,7 +409,7 @@ void lmdif(
 
             // Determine the Levenberg-Marquardt parameter.
 
-            lmpar(n, fjac, ldfjac, ipvt, diag, qtf, &delta, &par, wa1, wa2, wa3, wa4);
+            lmpar(n, fjac, ldfjac, ipvt, diag, qtf, delta, &par, wa1, wa2, wa3, wa4);
 
             // Store the direction p and x + p. calculate the norm of p.
 

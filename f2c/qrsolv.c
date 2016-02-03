@@ -5,15 +5,15 @@
 #include "minpack_c.h"
 
 void qrsolv(
-        const int  n,
-        double    *r,
-        const int  ldr,
-        const int *ipvt,
-        double    *diag,
-        double    *qtb,
-        double    *x,
-        double    *sdiag,
-        double    *wa
+        const int     n,
+        double       *r,
+        const int     ldr,
+        const int    *ipvt,
+        double       *diag,
+        const double *qtb,
+        double       *x,
+        double       *sdiag,
+        double       *wa
     )
 {
     // Given an m by n matrix a, an n by n diagonal matrix d,

@@ -225,7 +225,7 @@ void lmder(
     int iter;
     double temp, temp1, temp2;
     int iflag;
-    double delta;
+    double delta = 0.0;
     double ratio;
     double fnorm, gnorm, pnorm, xnorm = 0.0, fnorm1, actred, dirder, prered;
 
@@ -474,9 +474,9 @@ L190:
 
 L200:
 
-    // determine the levenberg-marquardt parameter.
+    // Determine the levenberg-marquardt parameter.
 
-    lmpar(n, &fjac[fjac_offset], ldfjac, &ipvt[1], &diag[1], &qtf[1], &delta, &par, &wa1[1], &wa2[1], &wa3[1], &wa4[1]);
+    lmpar(n, &fjac[fjac_offset], ldfjac, &ipvt[1], &diag[1], &qtf[1], delta, &par, &wa1[1], &wa2[1], &wa3[1], &wa4[1]);
 
     // store the direction p and x + p. calculate the norm of p.
 

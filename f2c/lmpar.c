@@ -6,18 +6,18 @@
 #include "minpack_c.h"
 
 void lmpar(
-        const int  n,
-        double    *r,
-        const int  ldr,
-        int       *ipvt,
-        double    *diag,
-        double    *qtb,
-        double    *delta,
-        double    *par,
-        double    *x,
-        double    *sdiag,
-        double    *wa1,
-        double    *wa2
+        const int     n,
+        double       *r,
+        const int     ldr,
+        const int    *ipvt,
+        const double *diag,
+        const double *qtb,
+        const double  delta,
+        double       *par,
+        double       *x,
+        double       *sdiag,
+        double       *wa1,
+        double       *wa2
     )
 {
     // Given an m by n matrix a, an n by n nonsingular diagonal
@@ -27,7 +27,7 @@ void lmpar(
 
     //       a*x = b ,     sqrt(par)*d*x = 0 ,
 
-    // In the least squares sense, and dxnorm is the euclidean
+    // in the least squares sense, and dxnorm is the Euclidean
     // norm of d*x, then either par is zero and
 
     //       (dxnorm-delta) .le. 0.1*delta ,
@@ -85,11 +85,11 @@ void lmpar(
     //     n elements of the vector (q transpose)*b.
 
     //   delta is a positive input variable which specifies an upper
-    //     bound on the euclidean norm of d*x.
+    //     bound on the Euclidean norm of d*x.
 
     //   par is a nonnegative variable. On input par contains an
     //     initial estimate of the Levenberg-Marquardt parameter.
-    //     on output par contains the final estimate.
+    //     On output par contains the final estimate.
 
     //   x is an output array of length n which contains the least
     //     squares solution of the system a*x = b, sqrt(par)*d*x = 0,
@@ -110,19 +110,8 @@ void lmpar(
     const double p1   = 0.1;
     const double p001 = 0.001;
 
-    double fp;
-    double parc, parl;
-    int iter;
-    double temp, paru;
-    double gnorm;
-    double dxnorm;
-
-    // dwarf is the smallest positive magnitude.
-
-    const double dwarf = DBL_MIN;
-
-    // compute and store in x the gauss-newton direction. if the
-    // jacobian is rank-deficient, obtain a least squares solution.
+    // Compute and store in x the Gauss-Newton direction. If the
+    // Jacobian is rank-deficient, obtain a least squares solution.
 
     int nsing = n;
 
@@ -146,7 +135,8 @@ void lmpar(
         int j = nsing - k - 1;
 
         wa1[j] /= r[j + j * ldr];
-        temp = wa1[j];
+
+        double temp = wa1[j];
 
         for (int i = 0; i < j; ++i)
         {
@@ -156,37 +146,40 @@ void lmpar(
 
     for (int j = 0; j < n; ++j)
     {
-        const int l = ipvt[j] - 1;
+        const int l = ipvt[j] - PIVOT_OFFSET;
         x[l] = wa1[j];
     }
 
     // Initialize the iteration counter.
     // Evaluate the function at the origin, and test
-    // for acceptance of the gauss-newton direction.
+    // for acceptance of the Gauss-Newton direction.
 
-    iter = 0;
+    int iter = 0;
+
     for (int j = 0; j < n; ++j)
     {
         wa2[j] = diag[j] * x[j];
     }
 
-    dxnorm = enorm(n, wa2);
-    fp = dxnorm - *delta;
-    if (fp <= p1 * *delta)
+    double dxnorm = enorm(n, wa2);
+    double fp = dxnorm - delta;
+
+    if (fp <= p1 * delta)
     {
         goto L_TERMINATE;
     }
 
-    // If the Jacobian is not rank deficient, the newton
+    // If the Jacobian is not rank deficient, the Newton
     // step provides a lower bound, parl, for the zero of
     // the function. Otherwise set this bound to zero.
 
-    parl = 0.0;
+    double parl = 0.0;
+
     if (nsing >= n)
     {
         for (int j = 0; j < n; ++j)
         {
-            const int l = ipvt[j] - 1;
+            const int l = ipvt[j] - PIVOT_OFFSET;
             wa1[j] = diag[l] * (wa2[l] / dxnorm);
         }
 
@@ -201,8 +194,8 @@ void lmpar(
 
             wa1[j] = (wa1[j] - sum) / r[j + j * ldr];
         }
-        temp = enorm(n, wa1);
-        parl = fp / *delta / temp / temp;
+
+        parl = fp / delta / square(enorm(n, wa1));
     }
 
     // Calculate an upper bound, paru, for the zero of the function.
@@ -216,19 +209,19 @@ void lmpar(
             sum += r[i + j * ldr] * qtb[i];
         }
 
-        const int l = ipvt[j] - 1;
+        const int l = ipvt[j] - PIVOT_OFFSET;
         wa1[j] = sum / diag[l];
     }
 
-    gnorm = enorm(n, wa1);
-    paru = gnorm / *delta;
+    double gnorm = enorm(n, wa1);
+    double paru = gnorm / delta;
 
     if (paru == 0.0)
     {
-        paru = dwarf / fmin(*delta, p1);
+        paru = DBL_MIN / fmin(delta, p1);
     }
 
-    // If the input par lies outside of the interval (parl,paru),
+    // If the input par lies outside of the interval (parl, paru),
     // set par to the closer endpoint.
 
     *par = fmax(*par, parl);
@@ -247,10 +240,10 @@ void lmpar(
 
         if (*par == 0.0)
         {
-            *par = fmax(dwarf, p001 * paru);
+            *par = fmax(DBL_MIN, p001 * paru);
         }
 
-        temp = sqrt(*par);
+        double temp = sqrt(*par);
 
         for (int j = 0; j < n; ++j)
         {
@@ -266,37 +259,37 @@ void lmpar(
 
         dxnorm = enorm(n, wa2);
         temp = fp;
-        fp = dxnorm - *delta;
+        fp = dxnorm - delta;
 
         // If the function is small enough, accept the current value
         // of par. Also test for the exceptional cases where parl
         // is zero or the number of iterations has reached 10.
 
-        if (fabs(fp) <= p1 * *delta || (parl == 0.0 && fp <= temp && temp < 0.0) || iter == 10)
+        if (fabs(fp) <= p1 * delta || (parl == 0.0 && fp <= temp && temp < 0.0) || iter == 10)
         {
             break;
         }
 
-        // Compute the newton correction.
+        // Compute the Newton correction.
 
         for (int j = 0; j < n; ++j)
         {
-            int l = ipvt[j] - 1;
+            const int l = ipvt[j] - PIVOT_OFFSET;
             wa1[j] = diag[l] * (wa2[l] / dxnorm);
         }
 
         for (int j = 0; j < n; ++j)
         {
-            wa1[j] /= sdiag[j];
-            temp = wa1[j];
+            const double temp = (wa1[j] /= sdiag[j]);
+
+            // TODO: check this
             for (int i = j + 1; i < n; ++i)
             {
                 wa1[i] -= r[i + j * ldr] * temp;
             }
         }
 
-        temp = enorm(n, wa1);
-        parc = fp / *delta / temp / temp;
+        const double parc = fp / delta / square(enorm(n, wa1));
 
         // Depending on the sign of the function, update parl or paru.
 

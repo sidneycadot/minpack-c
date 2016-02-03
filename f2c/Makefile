@@ -12,7 +12,7 @@ default : dependencies.pdf MyTestProgram
 #   fdjac2()
 #   qrfac() -- but: recheck!
 
-MyTestProgram : MyTestProgram.c lmdif1.c lmdif.c lmder1.c lmder.c enorm.c qrfac.c lmpar.c qrsolv.c fdjac2_2nd.c minpack_c.h
+MyTestProgram : MyTestProgram.c lmdif1.c lmdif.c lmder1.c lmder.c enorm.c qrfac.c lmpar.c qrsolv_2nd.c fdjac2.c minpack_c.h
 
 dependencies.pdf : dependencies.dot
 	dot -Tpdf dependencies.dot -o $@

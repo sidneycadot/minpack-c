@@ -5,15 +5,15 @@
 #include "minpack_c.h"
 
 void qrsolv(
-        const int n,
-        double *r,
-        const int ldr,
+        const int  n,
+        double    *r,
+        const int  ldr,
         const int *ipvt,
-        double *diag,
-        double *qtb,
-        double *x,
-        double *sdiag,
-        double *wa
+        double    *diag,
+        double    *qtb,
+        double    *x,
+        double    *sdiag,
+        double    *wa
     )
 {
     // Given an m by n matrix a, an n by n diagonal matrix d,
@@ -54,7 +54,7 @@ void qrsolv(
 
     //   n is a positive integer input variable set to the order of r.
 
-    //   r is an n by n array. on input the full upper triangle
+    //   r is an n by n array. On input the full upper triangle
     //     must contain the full upper triangle of the matrix r.
     //     On output the full upper triangle is unaltered, and the
     //     strict lower triangle contains the strict upper triangle
@@ -64,7 +64,7 @@ void qrsolv(
     //     which specifies the leading dimension of the array r.
 
     //   ipvt is an integer input array of length n which defines the
-    //     permutation matrix p such that a*p = q*r. column j of p
+    //     permutation matrix p such that a*p = q*r. Column j of p
     //     is column ipvt(j) of the identity matrix.
 
     //   diag is an input array of length n which must contain the
@@ -84,7 +84,7 @@ void qrsolv(
     // Argonne National Laboratory. MINPACK project. March 1980.
     // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 
-    // Copy r and (q transpose) * b to preserve input and initialize s.
+    // Copy r and (q transpose)*b to preserve input and initialize s.
     // In particular, save the diagonal elements of r in x.
 
     for (int j = 0; j < n; ++j)
@@ -104,7 +104,7 @@ void qrsolv(
         // Prepare the row of d to be eliminated, locating the
         // diagonal element using p from the qr factorization.
 
-        const int l = ipvt[j] - 1;
+        const int l = ipvt[j] - PIVOT_OFFSET;
 
         if (diag[l] != 0.0)
         {
@@ -116,7 +116,7 @@ void qrsolv(
             sdiag[j] = diag[l];
 
             // The transformations to eliminate the row of d
-            // modify only a single element of (q transpose) * b
+            // modify only a single element of (q transpose)*b
             // beyond the first n, which is initially zero.
 
             double qtbpj = 0.0;
@@ -132,16 +132,14 @@ void qrsolv(
 
                     if (fabs(r[k + k * ldr]) < fabs(sdiag[k]))
                     {
-
                         const double cotan = r[k + k * ldr] / sdiag[k];
-
-                        sin__ = 1.0 / sqrt(1.0 + cotan * cotan);
+                        sin__ = 1.0 / sqrt(1.0 + square(cotan));
                         cos__ = sin__ * cotan;
                     }
                     else
                     {
                         const double tan__ = sdiag[k] / r[k + k * ldr];
-                        cos__ = 1.0 / sqrt(1.0 + tan__ * tan__);
+                        cos__ = 1.0 / sqrt(1.0 + square(tan__));
                         sin__ = cos__ * tan__;
                     }
 
@@ -157,7 +155,7 @@ void qrsolv(
 
                     // Accumulate the tranformation in the row of s.
 
-                    for (int i = k+1; i < n; ++i)
+                    for (int i = k + 1; i < n; ++i)
                     {
                         const double rr = r[i + k * ldr];
 
@@ -175,7 +173,7 @@ void qrsolv(
         r[j + j * ldr] = x[j];
     }
 
-    // Solve the triangular system for z. if the system is
+    // Solve the triangular system for z. If the system is
     // singular, then obtain a least squares solution.
 
     int nsing = n;
@@ -193,9 +191,12 @@ void qrsolv(
         }
     }
 
+    // TODO: This for loop becomes very confusing when simplifying the f2c-generated C code.
+    //       Check that our simplifications are correct!
+
     for (int k = 0; k < nsing; ++k)
     {
-        int j = nsing - k;
+        const int j = nsing - k;
 
         double sum = 0.0;
 
@@ -211,7 +212,7 @@ void qrsolv(
 
     for (int j = 0; j < n; ++j)
     {
-        int l = ipvt[j] - 1;
+        const int l = ipvt[j] - PIVOT_OFFSET;
         x[l] = wa[j];
     }
 }

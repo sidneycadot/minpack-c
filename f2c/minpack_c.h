@@ -6,6 +6,8 @@
 
 #include <stdbool.h>
 
+#define PIVOT_OFFSET 1
+
 typedef void (*lmder_fcn)(const int m, const int n, double * x, double * fvec, double * fjac, const int ldfjac, int * iflag);
 typedef void (*lmdif_fcn)(const int m, const int n, double * x, double * fvec,                                  int * iflag);
 

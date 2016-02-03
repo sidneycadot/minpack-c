@@ -7,19 +7,19 @@
 #include "minpack_c.h"
 
 void qrfac(
-        const int   m,
-        const int   n,
-        double     *a,
-        const int   lda,
-        const bool  pivot,
-        int        *ipvt,
-        const int   lipvt,
-        double     *rdiag,
-        double     *acnorm,
-        double     *wa
+        const int    m,
+        const int    n,
+        double      *a,
+        const int    lda,
+        const bool   pivot,
+        int         *ipvt,
+        const int    lipvt,
+        double      *rdiag,
+        double      *acnorm,
+        double      *wa
     )
 {
-    // This subroutine uses householder transformations with column
+    // This subroutine uses Householder transformations with column
     // pivoting (optional) to compute a qr factorization of the
     // m by n matrix a. That is, qrfac determines an orthogonal
     // matrix q, a permutation matrix p, and an upper trapezoidal
@@ -88,22 +88,24 @@ void qrfac(
     // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 
     (void)lipvt; // Unused parameter.
-    const double p05  = 0.05;
+
+    const double p05 = 0.05;
 
     // Compute the initial column norms and initialize several arrays.
 
     for (int j = 0; j < n; ++j)
     {
         wa[j] = rdiag[j] = acnorm[j] = enorm(m, &a[j * lda]);
+
         if (pivot)
         {
-            ipvt[j] = (j + 1); // NOTE: 1-based index!!!
+            ipvt[j] = j + PIVOT_OFFSET;
         }
     }
 
     // Reduce a to r with Householder transformations.
 
-    const int minmn = (m < n) ? m : n; // minimum of m and n.
+    const int minmn = (m < n) ? m : n; // Minimum of m and n.
 
     for (int j = 0; j < minmn; ++j)
     {
@@ -161,7 +163,7 @@ void qrfac(
             // Apply the transformation to the remaining columns
             // and update the norms.
 
-            for (int k = (j + 1); k < n; ++k)
+            for (int k = j + 1; k < n; ++k)
             {
                 double sum = 0.0;
 
@@ -183,7 +185,6 @@ void qrfac(
 
                     if (p05 * square(rdiag[k] / wa[k]) <= DBL_EPSILON)
                     {
-                        // TODO: check correctness
                         wa[k] = rdiag[k] = enorm(m - (j + 1), &a[(j + 1) + k * lda]);
                     }
                 }

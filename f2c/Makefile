@@ -4,7 +4,7 @@
 CFLAGS = -W -Wall -O3 -std=c99
 LDLIBS = -lm
 
-default : dependencies.pdf MyTestProgram
+default : dependencies.pdf MyTestProgram TestVF
 
 # Checked:
 #   enorm()
@@ -13,7 +13,9 @@ default : dependencies.pdf MyTestProgram
 #   qrfac()
 #   qrsolve() -- but: recheck!
 
-MyTestProgram : MyTestProgram.c lmdif1.c lmdif.c lmder1.c lmder.c enorm.c qrfac.c lmpar_2nd.c qrsolv.c fdjac2.c minpack_c.h
+MyTestProgram : MyTestProgram.c lmdif1.c lmdif.c enorm.c qrfac.c lmpar.c qrsolv.c fdjac2.c minpack_c.h
+
+TestVF : TestVF.c lmdif1.c lmdif.c enorm.c qrfac.c lmpar.c qrsolv.c fdjac2.c minpack_c.h
 
 dependencies.pdf : dependencies.dot
 	dot -Tpdf dependencies.dot -o $@
@@ -21,4 +23,4 @@ dependencies.pdf : dependencies.dot
 	mv $@.temp $@
 
 clean :
-	$(RM) *.o MyTestProgram dependencies.pdf
+	$(RM) *.o MyTestProgram TestVF dependencies.pdf

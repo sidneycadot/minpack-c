@@ -29,7 +29,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
 
 void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, double *ftol, double *xtol, double *gtol, int *maxfev,
            double *epsfcn, double *diag, int *mode, double *factor, int *nprint, int *info, int *nfev,
-           double *fjac, int *ldfjac, int *ipvt, double *qtf, double *wa1, double *wa2, double *wa3, double *wa4);
+           double *fjac, const int ldfjac, int *ipvt, double *qtf, double *wa1, double *wa2, double *wa3, double *wa4);
 
 int lmdif1_(U_fp fcn, integer *m, integer *n, doublereal *x,
         doublereal *fvec, doublereal *tol, integer *info, integer *iwa,

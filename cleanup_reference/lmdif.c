@@ -4,7 +4,7 @@
 
 void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, double *ftol, double *xtol, double *gtol, int *maxfev,
            double *epsfcn, double *diag, int *mode, double *factor, int *nprint, int *info, int *nfev,
-           double *fjac, int *ldfjac, int *ipvt, double *qtf, double *wa1, double *wa2, double *wa3, double *wa4)
+           double *fjac, const int ldfjac, int *ipvt, double *qtf, double *wa1, double *wa2, double *wa3, double *wa4)
 {
     // the purpose of lmdif is to minimize the sum of the squares of
     // m nonlinear functions in n variables by a modification of
@@ -183,29 +183,25 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, double *
 
     // Initialized data
 
-    const doublereal one   = 1.0;
-    const doublereal p1    = 0.1;
-    const doublereal p5    = 0.5;
-    const doublereal p25   = 0.25;
-    const doublereal p75   = 0.75;
-    const doublereal p0001 = 1e-4;
-    const doublereal zero  = 0.0;
+    const double one   = 1.0;
+    const double p1    = 0.1;
+    const double p5    = 0.5;
+    const double p25   = 0.25;
+    const double p75   = 0.75;
+    const double p0001 = 1e-4;
+    const double zero  = 0.0;
 
     // System generated locals
 
-    integer fjac_dim1, fjac_offset, i__1, i__2;
-    doublereal d__1, d__2, d__3;
-
     // Local variables
-    integer i__, j, l;
-    doublereal par, sum;
-    integer iter;
-    doublereal temp, temp1, temp2;
-    integer iflag;
-    doublereal delta;
-    doublereal ratio;
-    doublereal fnorm, gnorm;
-    doublereal pnorm, xnorm, fnorm1, actred, dirder, prered;
+    double par, sum;
+    int iter;
+    double temp, temp1, temp2;
+    int iflag;
+    double delta;
+    double ratio;
+    double fnorm, gnorm;
+    double pnorm, xnorm, fnorm1, actred, dirder, prered;
 
     // Parameter adjustments
 
@@ -219,8 +215,9 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, double *
     --diag;
     --x;
 
-    fjac_dim1 = *ldfjac;
-    fjac_offset = 1 + fjac_dim1;
+    const int fjac_dim1 = ldfjac;
+    const int fjac_offset = 1 + fjac_dim1;
+
     fjac -= fjac_offset;
 
     *info = 0;
@@ -229,7 +226,7 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, double *
 
     // Check the input parameters for errors.
 
-    if (n <= 0 || m < n || *ldfjac < m || *ftol < zero || *xtol < zero || *gtol < zero || *maxfev <= 0 || *factor <= zero)
+    if (n <= 0 || m < n || ldfjac < m || *ftol < zero || *xtol < zero || *gtol < zero || *maxfev <= 0 || *factor <= zero)
     {
         goto L300;
     }
@@ -239,8 +236,7 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, double *
         goto L20;
     }
 
-    i__1 = n;
-    for (j = 1; j <= i__1; ++j)
+    for (int j = 1; j <= n; ++j)
     {
         if (diag[j] <= zero)
         {
@@ -276,7 +272,7 @@ L30:
     // Calculate the jacobian matrix.
 
     iflag = 2;
-    fdjac2(fcn, m, n, &x[1], &fvec[1], &fjac[fjac_offset], *ldfjac, &iflag, *epsfcn, &wa4[1]);
+    fdjac2(fcn, m, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &iflag, *epsfcn, &wa4[1]);
     *nfev += n;
 
     if (iflag < 0)
@@ -306,7 +302,7 @@ L40:
 
     // Compute the qr factorization of the Jacobian.
 
-    qrfac(m, n, &fjac[fjac_offset], *ldfjac, true, &ipvt[1], n, &wa1[1], &wa2[1], &wa3[1]);
+    qrfac(m, n, &fjac[fjac_offset], ldfjac, true, &ipvt[1], n, &wa1[1], &wa2[1], &wa3[1]);
 
     // On the first iteration and if mode is 1, scale according
     // to the norms of the columns of the initial Jacobian.
@@ -321,8 +317,7 @@ L40:
         goto L60;
     }
 
-    i__1 = n;
-    for (j = 1; j <= i__1; ++j)
+    for (int j = 1; j <= n; ++j)
     {
         diag[j] = wa2[j];
         if (wa2[j] == zero)
@@ -336,8 +331,7 @@ L60:
     // On the first iteration, calculate the norm of the scaled x
     // and initialize the step bound delta.
 
-    i__1 = n;
-    for (j = 1; j <= i__1; ++j)
+    for (int j = 1; j <= n; ++j)
     {
         wa3[j] = diag[j] * x[j];
     }
@@ -355,14 +349,12 @@ L80:
     // form (q transpose)*fvec and store the first n components in
     // qtf.
 
-    i__1 = m;
-    for (i__ = 1; i__ <= i__1; ++i__)
+    for (int i = 1; i <= m; ++i)
     {
-        wa4[i__] = fvec[i__];
+        wa4[i] = fvec[i];
     }
 
-    i__1 = n;
-    for (j = 1; j <= i__1; ++j)
+    for (int j = 1; j <= n; ++j)
     {
         if (fjac[j + j * fjac_dim1] == zero)
         {
@@ -371,18 +363,16 @@ L80:
 
         sum = zero;
 
-        i__2 = m;
-        for (i__ = j; i__ <= i__2; ++i__)
+        for (int i = j; i <= m; ++i)
         {
-            sum += fjac[i__ + j * fjac_dim1] * wa4[i__];
+            sum += fjac[i + j * fjac_dim1] * wa4[i];
         }
 
         temp = -sum / fjac[j + j * fjac_dim1];
 
-        i__2 = m;
-        for (i__ = j; i__ <= i__2; ++i__)
+        for (int i = j; i <= m; ++i)
         {
-            wa4[i__] += fjac[i__ + j * fjac_dim1] * temp;
+            wa4[i] += fjac[i + j * fjac_dim1] * temp;
         }
 L120:
         fjac[j + j * fjac_dim1] = wa1[j];
@@ -397,24 +387,20 @@ L120:
         goto L170;
     }
 
-    i__1 = n;
-    for (j = 1; j <= i__1; ++j)
+    for (int j = 1; j <= n; ++j)
     {
-        l = ipvt[j];
+        const int l = ipvt[j];
         if (wa2[l] == zero)
         {
             goto L150;
         }
         sum = zero;
 
-        i__2 = j;
-        for (i__ = 1; i__ <= i__2; ++i__)
+        for (int i = 1; i <= j; ++i)
         {
-            sum += fjac[i__ + j * fjac_dim1] * (qtf[i__] / fnorm);
+            sum += fjac[i + j * fjac_dim1] * (qtf[i] / fnorm);
         }
-        // Computing MAX
-        d__2 = gnorm, d__3 = (d__1 = sum / wa2[l], fabs(d__1));
-        gnorm = fmax(d__2,d__3);
+        gnorm = fmax(gnorm, fabs(sum / wa2[l]));
 L150:
         ;
     }
@@ -440,12 +426,9 @@ L170:
         goto L190;
     }
 
-    i__1 = n;
-    for (j = 1; j <= i__1; ++j)
+    for (int j = 1; j <= n; ++j)
     {
-        // Computing MAX
-        d__1 = diag[j], d__2 = wa2[j];
-        diag[j] = fmax(d__1, d__2);
+        diag[j] = fmax(diag[j], wa2[j]);
     }
 
 L190:
@@ -456,12 +439,11 @@ L200:
 
     // Determine the Levenberg-Marquardt parameter.
 
-    lmpar(n, &fjac[fjac_offset], *ldfjac, &ipvt[1], &diag[1], &qtf[1], delta, &par, &wa1[1], &wa2[1], &wa3[1], &wa4[1]);
+    lmpar(n, &fjac[fjac_offset], ldfjac, &ipvt[1], &diag[1], &qtf[1], delta, &par, &wa1[1], &wa2[1], &wa3[1], &wa4[1]);
 
     // Store the direction p and x + p. calculate the norm of p.
 
-    i__1 = n;
-    for (j = 1; j <= i__1; ++j)
+    for (int j = 1; j <= n; ++j)
     {
         wa1[j] = -wa1[j];
         wa2[j] = x[j] + wa1[j];
@@ -482,6 +464,7 @@ L200:
     iflag = 1;
     (*fcn)(m, n, &wa2[1], &wa4[1], &iflag);
     ++(*nfev);
+
     if (iflag < 0)
     {
         goto L300;
@@ -494,39 +477,28 @@ L200:
     actred = -one;
     if (p1 * fnorm1 < fnorm)
     {
-        // Computing 2nd power
-        d__1 = fnorm1 / fnorm;
-        actred = one - d__1 * d__1;
+        actred = one - square(fnorm1 / fnorm);
     }
 
     // Compute the scaled predicted reduction and
     // The scaled directional derivative.
 
-    i__1 = n;
-    for (j = 1; j <= i__1; ++j)
+    for (int j = 1; j <= n; ++j)
     {
         wa3[j] = zero;
-        l = ipvt[j];
+        const int l = ipvt[j];
         temp = wa1[l];
-        i__2 = j;
-        for (i__ = 1; i__ <= i__2; ++i__)
+
+        for (int i = 1; i <= j; ++i)
         {
-            wa3[i__] += fjac[i__ + j * fjac_dim1] * temp;
+            wa3[i] += fjac[i + j * fjac_dim1] * temp;
         }
     }
 
     temp1 = enorm(n, &wa3[1]) / fnorm;
     temp2 = sqrt(par) * pnorm / fnorm;
-    // Computing 2nd power
-    d__1 = temp1;
-    // Computing 2nd power
-    d__2 = temp2;
-    prered = d__1 * d__1 + d__2 * d__2 / p5;
-    // Computing 2nd power
-    d__1 = temp1;
-    // Computing 2nd power
-    d__2 = temp2;
-    dirder = -(d__1 * d__1 + d__2 * d__2);
+    prered = square(temp1) + square(temp2) / p5;
+    dirder = -(square(temp1) + square(temp2));
 
     // Compute the ratio of the actual to the predicted
     // Reduction.
@@ -559,9 +531,7 @@ L200:
         temp = p1;
     }
 
-    // Computing MIN
-    d__1 = delta, d__2 = pnorm / p1;
-    delta = temp * fmin(d__1,d__2);
+    delta = temp * fmin(delta, pnorm / p1);
     par /= temp;
     goto L260;
 
@@ -587,17 +557,15 @@ L260:
 
     // Successful iteration. update x, fvec, and their norms.
 
-    i__1 = n;
-    for (j = 1; j <= i__1; ++j)
+    for (int j = 1; j <= n; ++j)
     {
         x[j] = wa2[j];
         wa2[j] = diag[j] * x[j];
     }
 
-    i__1 = m;
-    for (i__ = 1; i__ <= i__1; ++i__)
+    for (int i = 1; i <= m; ++i)
     {
-        fvec[i__] = wa4[i__];
+        fvec[i] = wa4[i];
     }
 
     xnorm = enorm(n, &wa2[1]);

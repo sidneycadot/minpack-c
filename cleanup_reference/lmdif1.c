@@ -152,7 +152,7 @@
     mp5n = *m + *n * 5;
     lmdif(fcn, *m, *n, &x[1], &fvec[1], &ftol, &xtol, &gtol, &maxfev, &
 	    epsfcn, &wa[1], &mode, &factor, &nprint, info, &nfev, &wa[mp5n + 
-	    1], m, &iwa[1], &wa[*n + 1], &wa[(*n << 1) + 1], &wa[*n * 3 + 1], 
+	    1], *m, &iwa[1], &wa[*n + 1], &wa[(*n << 1) + 1], &wa[*n * 3 + 1], 
 	    &wa[(*n << 2) + 1], &wa[*n * 5 + 1]);
     if (*info == 8) {
 	*info = 4;

@@ -23,12 +23,6 @@
 
     static integer mp5n, mode, nfev;
     static doublereal ftol, gtol, xtol;
-    extern /* Subroutine */ int lmdif_(U_fp, integer *, integer *, doublereal 
-	    *, doublereal *, doublereal *, doublereal *, doublereal *, 
-	    integer *, doublereal *, doublereal *, integer *, doublereal *, 
-	    integer *, integer *, integer *, doublereal *, integer *, integer 
-	    *, doublereal *, doublereal *, doublereal *, doublereal *, 
-	    doublereal *);
     static doublereal epsfcn;
     static integer maxfev, nprint;
 
@@ -156,7 +150,7 @@
     mode = 1;
     nprint = 0;
     mp5n = *m + *n * 5;
-    lmdif_((U_fp)fcn, m, n, &x[1], &fvec[1], &ftol, &xtol, &gtol, &maxfev, &
+    lmdif(fcn, *m, *n, &x[1], &fvec[1], &ftol, &xtol, &gtol, &maxfev, &
 	    epsfcn, &wa[1], &mode, &factor, &nprint, info, &nfev, &wa[mp5n + 
 	    1], m, &iwa[1], &wa[*n + 1], &wa[(*n << 1) + 1], &wa[*n * 3 + 1], 
 	    &wa[(*n << 2) + 1], &wa[*n * 5 + 1]);

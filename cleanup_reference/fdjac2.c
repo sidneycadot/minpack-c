@@ -3,7 +3,7 @@
 
 #include "my_include.h"
 
-void fdjac2(U_fp fcn, int m, int n, double *x, double *fvec, double *fjac, const int ldfjac, int *iflag, const double epsfcn, double *wa)
+void fdjac2(U_fp fcn, const int m, const int n, double *x, double *fvec, double *fjac, const int ldfjac, int *iflag, const double epsfcn, double *wa)
 {
     // This subroutine computes a forward-difference approximation
     // to the m by n Jacobian matrix associated with a specified
@@ -86,7 +86,7 @@ void fdjac2(U_fp fcn, int m, int n, double *x, double *fvec, double *fjac, const
 
         x[j] = temp + h;
 
-        (*fcn)(&m, &n, x, wa, iflag);
+        (*fcn)(m, n, x, wa, iflag);
 
         if (*iflag < 0)
         {

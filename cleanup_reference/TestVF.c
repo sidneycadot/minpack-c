@@ -14,13 +14,13 @@ double f_arr[3001];
 double f_min;
 double f_max;
 
-void fcn(integer *m, integer *n, doublereal *x, doublereal *fvec, integer *iflag)
+void fcn(const int m, const int n, double *x, double *fvec, int *iflag)
 {
     const double PI = 3.141592653589793238462643383;
 
-    printf("invocation fcn(m = %d, n = %d, x[], fvec[], iflag = %d)\n", *m, *n, *iflag);
+    printf("invocation fcn(m = %d, n = %d, x[], fvec[], iflag = %d)\n", m, n, *iflag);
 
-    for (int i = 0; i < *n; ++i)
+    for (int i = 0; i < n; ++i)
     {
         printf("x[%d] = %f\n", i, x[i]);
     }
@@ -33,7 +33,7 @@ void fcn(integer *m, integer *n, doublereal *x, doublereal *fvec, integer *iflag
 
     const double tanh_curviness = tanh(curviness);
 
-    for (int i = 0; i < *m; ++i)
+    for (int i = 0; i < m; ++i)
     {
         const double f = f_arr[i];
 

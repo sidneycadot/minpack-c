@@ -72,6 +72,8 @@ void qrfac(const int m, const int n, double *a, const int lda, const bool pivot,
     // Argonne National Laboratory. MINPACK project. March 1980.
     // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 
+    (void)lipvt; // Unused parameter.
+
     const double p05 = 0.05;
 
     // Compute the initial column norms and initialize several arrays.

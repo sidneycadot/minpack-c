@@ -4,11 +4,15 @@
 //////////////
 
 #include <math.h>
+#include <assert.h>
 #include <stdio.h>
 #include "my_include.h"
 
 double v_arr[3001];
 double f_arr[3001];
+
+double f_min;
+double f_max;
 
 void fcn(integer *m, integer *n, doublereal *x, doublereal *fvec, integer *iflag)
 {
@@ -16,7 +20,7 @@ void fcn(integer *m, integer *n, doublereal *x, doublereal *fvec, integer *iflag
 
     printf("invocation fcn(m = %d, n = %d, x[], fvec[], iflag = %d)\n", *m, *n, *iflag);
 
-    for (int i = 0; i < 7; ++i)
+    for (int i = 0; i < *n; ++i)
     {
         printf("x[%d] = %f\n", i, x[i]);
     }
@@ -26,8 +30,6 @@ void fcn(integer *m, integer *n, doublereal *x, doublereal *fvec, integer *iflag
     const double curviness              = x[2];
     const double vOffset                = x[3];
     const double vScale                 = x[4];
-    const double f_min                  = x[5];
-    const double f_max                  = x[6];
 
     const double tanh_curviness = tanh(curviness);
 
@@ -47,25 +49,26 @@ void fcn(integer *m, integer *n, doublereal *x, doublereal *fvec, integer *iflag
     }
 }
 
-double wa[30000];
-int lwa = 30000;
+doublereal wa[30000];
+integer lwa = 30000;
 
 int main(void)
 {
-    int m = 3001; // number of functions (i.e., data points)
-    int n = 5; // number of parameters;
+    integer m = 3001; // number of functions (i.e., data points)
+    integer n = 5; // number of parameters;
 
     FILE * f = fopen("vf.txt", "r");
 
     for (int i = 0; i < m; ++i)
     {
-        fscanf(f, "%lf%lf", &v_arr[i], &f_arr[i]);
+        int r = fscanf(f, "%lf%lf", &v_arr[i], &f_arr[i]);
+        assert(r == 2);
         //printf("%f %f\n", v_arr[i], f_arr[i]);
     }
     fclose(f);
 
-    double f_min = +INFINITY;
-    double f_max = -INFINITY;
+    f_min = +INFINITY;
+    f_max = -INFINITY;
 
     for (int i = 0; i < m; ++i)
     {
@@ -75,7 +78,7 @@ int main(void)
 
     printf("frequency range: %f .. %f\n", f_min, f_max);
 
-    double x[7]; // parameters: (logFrequencySlackLeft, logFrequencySlackRight, curviness, vOffset, vScale, f_min, f_max);
+    double x[5]; // parameters: (logFrequencySlackLeft, logFrequencySlackRight, curviness, vOffset, vScale, f_min, f_max);
 
     double fvec[3001];
 
@@ -86,8 +89,6 @@ int main(void)
     x[2] = 1.0;
     x[3] = 1.5;
     x[4] = 0.40;
-    x[5] = f_min;
-    x[6] = f_max;
 
     double tol = 1e-12;
     int info;
@@ -95,6 +96,20 @@ int main(void)
     lmdif1_(fcn, &m, &n, x, fvec, &tol, &info, iwa, wa, &lwa);
 
     printf("info: %d\n", info);
+
+    if (1)
+    {
+        printf("========================= x[] after lmdif1: {");
+        for (int i = 0; i < n; ++i)
+        {
+            if (i != 0)
+            {
+                printf(", ");
+            }
+            printf("%f", x[i]);
+        }
+        printf("}\n");
+    }
 
     return 0;
 }

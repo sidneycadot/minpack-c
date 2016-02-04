@@ -442,12 +442,11 @@ L190:
 
 L200:
 
-/*           determine the levenberg-marquardt parameter. */
+    /* determine the levenberg-marquardt parameter. */
 
-    lmpar_(n, &fjac[fjac_offset], ldfjac, &ipvt[1], &diag[1], &qtf[1], &delta,
-	     &par, &wa1[1], &wa2[1], &wa3[1], &wa4[1]);
+    lmpar(*n, &fjac[fjac_offset], *ldfjac, &ipvt[1], &diag[1], &qtf[1], delta, &par, &wa1[1], &wa2[1], &wa3[1], &wa4[1]);
 
-/*           store the direction p and x + p. calculate the norm of p. */
+    /* store the direction p and x + p. calculate the norm of p. */
 
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {

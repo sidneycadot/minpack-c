@@ -27,8 +27,8 @@ void qrfac(const int m, const int n, double *a, const int lda, const bool pivot,
 void qrsolv(const int n, double *r, const int ldr, const int *ipvt, const double *diag, const double *qtb, double *x, double *sdiag, double *wa);
 void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double *diag, double *qtb, const double delta, double *par, double *x, double *sdiag, double *wa1, double *wa2);
 
-void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, double *ftol, double *xtol, double *gtol, int *maxfev,
-           double *epsfcn, double *diag, int *mode, double *factor, int *nprint, int *info, int *nfev,
+void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const double ftol, const double xtol, const double gtol, const int maxfev,
+           const double epsfcn, double *diag, const int mode, const double factor, const int nprint, int *info, int *nfev,
            double *fjac, const int ldfjac, int *ipvt, double *qtf, double *wa1, double *wa2, double *wa3, double *wa4);
 
 int lmdif1_(U_fp fcn, integer *m, integer *n, doublereal *x,

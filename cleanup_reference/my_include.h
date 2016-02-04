@@ -23,6 +23,7 @@ static const double MACHINE_EPSILON =2.22044604926e-16;
 double enorm(const int n, const double *x);
 void fdjac2(U_fp fcn, int m, int n, double *x, double *fvec, double *fjac, const int ldfjac, int *iflag, const double epsfcn, double *wa);
 void qrfac(const int m, const int n, double *a, const int lda, const bool pivot, int *ipvt, const int lipvt, double *rdiag, double *acnorm, double *wa);
+void qrsolv(const int n, double *r, const int ldr, const int *ipvt, const double *diag, const double *qtb, double *x, double *sdiag, double *wa);
 
 /* Subroutine */ int lmpar_(integer *n, doublereal *r__, integer *ldr, 
         integer *ipvt, doublereal *diag, doublereal *qtb, doublereal *delta, 

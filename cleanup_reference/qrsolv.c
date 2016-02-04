@@ -1,280 +1,203 @@
-/* qrsolv.f -- translated by f2c (version 20100827).
-   You must link the resulting object file with libf2c:
-	on Microsoft Windows system, link with libf2c.lib;
-	on Linux or Unix systems, link with .../path/to/libf2c.a -lm
-	or, if you install libf2c.a in a standard place, with -lf2c -lm
-	-- in that order, at the end of the command line, as in
-		cc *.o -lf2c -lm
-	Source for libf2c is in /netlib/f2c/libf2c.zip, e.g.,
 
-		http://www.netlib.org/f2c/libf2c.zip
-*/
+// qrsolv.f
 
 #include "my_include.h"
 
-/* Subroutine */ int qrsolv_(integer *n, doublereal *r__, integer *ldr, 
-	integer *ipvt, doublereal *diag, doublereal *qtb, doublereal *x, 
-	doublereal *sdiag, doublereal *wa)
+void qrsolv(const int n, double *r, const int ldr, const int *ipvt, const double *diag, const double *qtb, double *x, double *sdiag, double *wa)
 {
-    /* Initialized data */
+    // Given an m by n matrix a, an n by n diagonal matrix d,
+    // and an m-vector b, the problem is to determine an x which
+    // solves the system
 
-    static doublereal p5 = .5;
-    static doublereal p25 = .25;
-    static doublereal zero = 0.;
+    //       a*x = b ,     d*x = 0 ,
 
-    /* System generated locals */
-    integer r_dim1, r_offset, i__1, i__2, i__3;
-    doublereal d__1, d__2;
+    // in the least squares sense.
 
-    /* Builtin functions */
-    double sqrt(doublereal);
+    // This subroutine completes the solution of the problem
+    // if it is provided with the necessary information from the
+    // QR factorization, with column pivoting, of a. That is, if
+    // a*p = q*r, where p is a permutation matrix, q has orthogonal
+    // columns, and r is an upper triangular matrix with diagonal
+    // elements of nonincreasing magnitude, then qrsolv expects
+    // the full upper triangle of r, the permutation matrix p,
+    // and the first n components of (q transpose)*b. The system
+    // a*x = b, d*x = 0, is then equivalent to
 
-    /* Local variables */
-    static integer i__, j, k, l, jp1, kp1;
-    static doublereal tan__, cos__, sin__, sum, temp, cotan;
-    static integer nsing;
-    static doublereal qtbpj;
+    //              t       t
+    //       r*z = q *b ,  p *d*p*z = 0 ,
 
-/*     ********** */
+    // where x = p*z. If this system does not have full rank,
+    // then a least squares solution is obtained. On output qrsolv
+    // also provides an upper triangular matrix s such that
 
-/*     subroutine qrsolv */
+    //        t   t               t
+    //       p *(a *a + d*d)*p = s *s .
 
-/*     given an m by n matrix a, an n by n diagonal matrix d, */
-/*     and an m-vector b, the problem is to determine an x which */
-/*     solves the system */
+    // s is computed within qrsolv and may be of separate interest.
 
-/*           a*x = b ,     d*x = 0 , */
+    // The subroutine statement is
 
-/*     in the least squares sense. */
+    //   subroutine qrsolv(n,r,ldr,ipvt,diag,qtb,x,sdiag,wa)
 
-/*     this subroutine completes the solution of the problem */
-/*     if it is provided with the necessary information from the */
-/*     qr factorization, with column pivoting, of a. that is, if */
-/*     a*p = q*r, where p is a permutation matrix, q has orthogonal */
-/*     columns, and r is an upper triangular matrix with diagonal */
-/*     elements of nonincreasing magnitude, then qrsolv expects */
-/*     the full upper triangle of r, the permutation matrix p, */
-/*     and the first n components of (q transpose)*b. the system */
-/*     a*x = b, d*x = 0, is then equivalent to */
+    // where
 
-/*                  t       t */
-/*           r*z = q *b ,  p *d*p*z = 0 , */
+    //   n is a positive integer input variable set to the order of r.
 
-/*     where x = p*z. if this system does not have full rank, */
-/*     then a least squares solution is obtained. on output qrsolv */
-/*     also provides an upper triangular matrix s such that */
+    //   r is an n by n array. On input the full upper triangle
+    //     must contain the full upper triangle of the matrix r.
+    //     On output the full upper triangle is unaltered, and the
+    //     strict lower triangle contains the strict upper triangle
+    //     (transposed) of the upper triangular matrix s.
 
-/*            t   t               t */
-/*           p *(a *a + d*d)*p = s *s . */
+    //   ldr is a positive integer input variable not less than n
+    //     which specifies the leading dimension of the array r.
 
-/*     s is computed within qrsolv and may be of separate interest. */
+    //   ipvt is an integer input array of length n which defines the
+    //     permutation matrix p such that a*p = q*r. Column j of p
+    //     is column ipvt(j) of the identity matrix.
 
-/*     the subroutine statement is */
+    //   diag is an input array of length n which must contain the
+    //     diagonal elements of the matrix d.
 
-/*       subroutine qrsolv(n,r,ldr,ipvt,diag,qtb,x,sdiag,wa) */
+    //   qtb is an input array of length n which must contain the first
+    //     n elements of the vector (q transpose)*b.
 
-/*     where */
+    //   x is an output array of length n which contains the least
+    //     squares solution of the system a*x = b, d*x = 0.
 
-/*       n is a positive integer input variable set to the order of r. */
+    //   sdiag is an output array of length n which contains the
+    //     diagonal elements of the upper triangular matrix s.
 
-/*       r is an n by n array. on input the full upper triangle */
-/*         must contain the full upper triangle of the matrix r. */
-/*         on output the full upper triangle is unaltered, and the */
-/*         strict lower triangle contains the strict upper triangle */
-/*         (transposed) of the upper triangular matrix s. */
+    //   wa is a work array of length n.
 
-/*       ldr is a positive integer input variable not less than n */
-/*         which specifies the leading dimension of the array r. */
+    // Argonne National Laboratory. MINPACK project. March 1980.
+    // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 
-/*       ipvt is an integer input array of length n which defines the */
-/*         permutation matrix p such that a*p = q*r. column j of p */
-/*         is column ipvt(j) of the identity matrix. */
+    // Copy r and (q transpose)*b to preserve input and initialize s.
+    // In particular, save the diagonal elements of r in x.
 
-/*       diag is an input array of length n which must contain the */
-/*         diagonal elements of the matrix d. */
-
-/*       qtb is an input array of length n which must contain the first */
-/*         n elements of the vector (q transpose)*b. */
-
-/*       x is an output array of length n which contains the least */
-/*         squares solution of the system a*x = b, d*x = 0. */
-
-/*       sdiag is an output array of length n which contains the */
-/*         diagonal elements of the upper triangular matrix s. */
-
-/*       wa is a work array of length n. */
-
-/*     subprograms called */
-
-/*       fortran-supplied ... dabs,dsqrt */
-
-/*     argonne national laboratory. minpack project. march 1980. */
-/*     burton s. garbow, kenneth e. hillstrom, jorge j. more */
-
-/*     ********** */
-    /* Parameter adjustments */
-    --wa;
-    --sdiag;
-    --x;
-    --qtb;
-    --diag;
-    --ipvt;
-    r_dim1 = *ldr;
-    r_offset = 1 + r_dim1;
-    r__ -= r_offset;
-
-    /* Function Body */
-
-/*     copy r and (q transpose)*b to preserve input and initialize s. */
-/*     in particular, save the diagonal elements of r in x. */
-
-    i__1 = *n;
-    for (j = 1; j <= i__1; ++j) {
-	i__2 = *n;
-	for (i__ = j; i__ <= i__2; ++i__) {
-	    r__[i__ + j * r_dim1] = r__[j + i__ * r_dim1];
-/* L10: */
-	}
-	x[j] = r__[j + j * r_dim1];
-	wa[j] = qtb[j];
-/* L20: */
+    for (int j = 0; j < n; ++j)
+    {
+        for (int i = j; i < n; ++i)
+        {
+            r[i + j * ldr] = r[j + i * ldr];
+        }
+        x[j] = r[j + j * ldr];
+        wa[j] = qtb[j];
     }
 
-/*     eliminate the diagonal matrix d using a givens rotation. */
+    // Eliminate the diagonal matrix d using a Givens rotation.
 
-    i__1 = *n;
-    for (j = 1; j <= i__1; ++j) {
+    for (int j = 0; j < n; ++j)
+    {
+        // Prepare the row of d to be eliminated, locating the
+        // diagonal element using p from the QR factorization.
 
-/*        prepare the row of d to be eliminated, locating the */
-/*        diagonal element using p from the qr factorization. */
+        const int l = ipvt[j] - PIVOT_OFFSET;
 
-	l = ipvt[j];
-	if (diag[l] == zero) {
-	    goto L90;
-	}
-	i__2 = *n;
-	for (k = j; k <= i__2; ++k) {
-	    sdiag[k] = zero;
-/* L30: */
-	}
-	sdiag[j] = diag[l];
+        if (diag[l] != 0.0)
+        {
+            for (int k = j; k < n; ++k)
+            {
+                sdiag[k] = 0.0;
+            }
 
-/*        the transformations to eliminate the row of d */
-/*        modify only a single element of (q transpose)*b */
-/*        beyond the first n, which is initially zero. */
+            sdiag[j] = diag[l];
 
-	qtbpj = zero;
-	i__2 = *n;
-	for (k = j; k <= i__2; ++k) {
+            // The transformations to eliminate the row of d
+            // modify only a single element of (q transpose)*b
+            // beyond the first n, which is initially zero.
 
-/*           determine a givens rotation which eliminates the */
-/*           appropriate element in the current row of d. */
+            double qtbpj = 0.0;
 
-	    if (sdiag[k] == zero) {
-		goto L70;
-	    }
-	    if ((d__1 = r__[k + k * r_dim1], fabs(d__1)) >= (d__2 = sdiag[k], 
-		    fabs(d__2))) {
-		goto L40;
-	    }
-	    cotan = r__[k + k * r_dim1] / sdiag[k];
-/* Computing 2nd power */
-	    d__1 = cotan;
-	    sin__ = p5 / sqrt(p25 + p25 * (d__1 * d__1));
-	    cos__ = sin__ * cotan;
-	    goto L50;
-L40:
-	    tan__ = sdiag[k] / r__[k + k * r_dim1];
-/* Computing 2nd power */
-	    d__1 = tan__;
-	    cos__ = p5 / sqrt(p25 + p25 * (d__1 * d__1));
-	    sin__ = cos__ * tan__;
-L50:
+            for (int k = j; k < n; ++k)
+            {
+                // Determine a givens rotation which eliminates the
+                // appropriate element in the current row of d.
 
-/*           compute the modified diagonal element of r and */
-/*           the modified element of ((q transpose)*b,0). */
+                if (sdiag[k] != 0.0)
+                {
+                    double sin_, cos_;
 
-	    r__[k + k * r_dim1] = cos__ * r__[k + k * r_dim1] + sin__ * sdiag[
-		    k];
-	    temp = cos__ * wa[k] + sin__ * qtbpj;
-	    qtbpj = -sin__ * wa[k] + cos__ * qtbpj;
-	    wa[k] = temp;
+                    if (fabs(r[(k) + (k) * ldr]) < fabs(sdiag[k]))
+                    {
+                        const double cot_ = r[k + k * ldr] / sdiag[k];
+                        sin_ = 1.0 / sqrt(1.0 + square(cot_));
+                        cos_ = sin_ * cot_;
+                    }
+                    else
+                    {
+                        const double tan_ = sdiag[k] / r[k + k * ldr];
+                        cos_ = 1.0 / sqrt(1.0 + square(tan_));
+                        sin_ = cos_ * tan_;
+                    }
 
-/*           accumulate the tranformation in the row of s. */
+                    // Compute the modified diagonal element of r and
+                    // the modified element of ((q transpose)*b,0).
 
-	    kp1 = k + 1;
-	    if (*n < kp1) {
-		goto L70;
-	    }
-	    i__3 = *n;
-	    for (i__ = kp1; i__ <= i__3; ++i__) {
-		temp = cos__ * r__[i__ + k * r_dim1] + sin__ * sdiag[i__];
-		sdiag[i__] = -sin__ * r__[i__ + k * r_dim1] + cos__ * sdiag[
-			i__];
-		r__[i__ + k * r_dim1] = temp;
-/* L60: */
-	    }
-L70:
-/* L80: */
-	    ;
-	}
-L90:
+                    r[k + k * ldr] = cos_ * r[k + k * ldr] + sin_ * sdiag[k];
 
-/*        store the diagonal element of s and restore */
-/*        the corresponding diagonal element of r. */
+                    const double temp = wa[k];
 
-	sdiag[j] = r__[j + j * r_dim1];
-	r__[j + j * r_dim1] = x[j];
-/* L100: */
+                    wa[k] =  cos_ * temp + sin_ * qtbpj;
+                    qtbpj = -sin_ * temp + cos_ * qtbpj;
+
+                    // Accumulate the tranformation in the row of s.
+
+                    for (int i = k + 1; i < n; ++i)
+                    {
+                        const double temp = r[i + k * ldr];
+
+                        r[i + k * ldr] =  cos_ * temp + sin_ * sdiag[i];
+                        sdiag[i]       = -sin_ * temp + cos_ * sdiag[i];
+                    }
+                }
+            }
+        }
+
+        // Store the diagonal element of s and restore
+        // the corresponding diagonal element of r.
+
+        sdiag[j] = r[j + j * ldr];
+        r[j + j * ldr] = x[j];
     }
 
-/*     solve the triangular system for z. if the system is */
-/*     singular, then obtain a least squares solution. */
+    // Solve the triangular system for z. If the system is
+    // singular, then obtain a least squares solution.
 
-    nsing = *n;
-    i__1 = *n;
-    for (j = 1; j <= i__1; ++j) {
-	if (sdiag[j] == zero && nsing == *n) {
-	    nsing = j - 1;
-	}
-	if (nsing < *n) {
-	    wa[j] = zero;
-	}
-/* L110: */
+    int nsing = n;
+
+    for (int j = 0; j < n; ++j)
+    {
+        if (sdiag[j] == 0.0 && nsing == n)
+        {
+            nsing = j;
+        }
+        if (nsing < n)
+        {
+            wa[j] = 0.0;
+        }
     }
-    if (nsing < 1) {
-	goto L150;
+
+    for (int k = 1; k <= nsing; ++k)
+    {
+        const int j = nsing - k;
+
+        double sum = 0.0;
+
+        for (int i = j + 1; i < nsing; ++i)
+        {
+            sum += r[i + j * ldr] * wa[i];
+        }
+
+        wa[j] = (wa[j] - sum) / sdiag[j];
     }
-    i__1 = nsing;
-    for (k = 1; k <= i__1; ++k) {
-	j = nsing - k + 1;
-	sum = zero;
-	jp1 = j + 1;
-	if (nsing < jp1) {
-	    goto L130;
-	}
-	i__2 = nsing;
-	for (i__ = jp1; i__ <= i__2; ++i__) {
-	    sum += r__[i__ + j * r_dim1] * wa[i__];
-/* L120: */
-	}
-L130:
-	wa[j] = (wa[j] - sum) / sdiag[j];
-/* L140: */
+
+    // Permute the components of z back to components of x.
+
+    for (int j = 0; j < n; ++j)
+    {
+        const int l = ipvt[j] - PIVOT_OFFSET;
+        x[l] = wa[j];
     }
-L150:
-
-/*     permute the components of z back to components of x. */
-
-    i__1 = *n;
-    for (j = 1; j <= i__1; ++j) {
-	l = ipvt[j];
-	x[l] = wa[j];
-/* L160: */
-    }
-    return 0;
-
-/*     last card of subroutine qrsolv. */
-
-} /* qrsolv_ */
-
+}

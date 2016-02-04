@@ -45,9 +45,6 @@ static integer c__2 = 2;
     static doublereal gnorm;
     extern doublereal dpmpar_(integer *);
     static doublereal dxnorm;
-    extern /* Subroutine */ int qrsolv_(integer *, doublereal *, integer *, 
-            integer *, doublereal *, doublereal *, doublereal *, doublereal *,
-            doublereal *);
 
 /*     ********** */
 
@@ -302,8 +299,9 @@ L150:
         wa1[j] = temp * diag[j];
 /* L160: */
     }
-    qrsolv_(n, &r__[r_offset], ldr, &ipvt[1], &wa1[1], &qtb[1], &x[1], &sdiag[
-            1], &wa2[1]);
+
+    qrsolv(*n, &r__[r_offset], *ldr, &ipvt[1], &wa1[1], &qtb[1], &x[1], &sdiag[1], &wa2[1]);
+
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
         wa2[j] = diag[j] * x[j];

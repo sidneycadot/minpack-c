@@ -1,13 +1,13 @@
 /* lmpar.f -- translated by f2c (version 20100827).
-   You must link the resulting object file with libf2c:
-	on Microsoft Windows system, link with libf2c.lib;
-	on Linux or Unix systems, link with .../path/to/libf2c.a -lm
-	or, if you install libf2c.a in a standard place, with -lf2c -lm
-	-- in that order, at the end of the command line, as in
-		cc *.o -lf2c -lm
-	Source for libf2c is in /netlib/f2c/libf2c.zip, e.g.,
+You must link the resulting object file with libf2c:
+        on Microsoft Windows system, link with libf2c.lib;
+        on Linux or Unix systems, link with .../path/to/libf2c.a -lm
+        or, if you install libf2c.a in a standard place, with -lf2c -lm
+        -- in that order, at the end of the command line, as in
+                cc *.o -lf2c -lm
+        Source for libf2c is in /netlib/f2c/libf2c.zip, e.g.,
 
-		http://www.netlib.org/f2c/libf2c.zip
+                http://www.netlib.org/f2c/libf2c.zip
 */
 
 #include "my_include.h"
@@ -17,9 +17,9 @@
 static integer c__2 = 2;
 
 /* Subroutine */ int lmpar_(integer *n, doublereal *r__, integer *ldr, 
-	integer *ipvt, doublereal *diag, doublereal *qtb, doublereal *delta, 
-	doublereal *par, doublereal *x, doublereal *sdiag, doublereal *wa1, 
-	doublereal *wa2)
+        integer *ipvt, doublereal *diag, doublereal *qtb, doublereal *delta, 
+        doublereal *par, doublereal *x, doublereal *sdiag, doublereal *wa1, 
+        doublereal *wa2)
 {
     /* Initialized data */
 
@@ -42,13 +42,12 @@ static integer c__2 = 2;
     static integer iter;
     static doublereal temp, paru, dwarf;
     static integer nsing;
-    extern doublereal enorm_(integer *, doublereal *);
     static doublereal gnorm;
     extern doublereal dpmpar_(integer *);
     static doublereal dxnorm;
     extern /* Subroutine */ int qrsolv_(integer *, doublereal *, integer *, 
-	    integer *, doublereal *, doublereal *, doublereal *, doublereal *,
-	     doublereal *);
+            integer *, doublereal *, doublereal *, doublereal *, doublereal *,
+            doublereal *);
 
 /*     ********** */
 
@@ -168,41 +167,41 @@ static integer c__2 = 2;
     nsing = *n;
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
-	wa1[j] = qtb[j];
-	if (r__[j + j * r_dim1] == zero && nsing == *n) {
-	    nsing = j - 1;
-	}
-	if (nsing < *n) {
-	    wa1[j] = zero;
-	}
+        wa1[j] = qtb[j];
+        if (r__[j + j * r_dim1] == zero && nsing == *n) {
+            nsing = j - 1;
+        }
+        if (nsing < *n) {
+            wa1[j] = zero;
+        }
 /* L10: */
     }
     if (nsing < 1) {
-	goto L50;
+        goto L50;
     }
     i__1 = nsing;
     for (k = 1; k <= i__1; ++k) {
-	j = nsing - k + 1;
-	wa1[j] /= r__[j + j * r_dim1];
-	temp = wa1[j];
-	jm1 = j - 1;
-	if (jm1 < 1) {
-	    goto L30;
-	}
-	i__2 = jm1;
-	for (i__ = 1; i__ <= i__2; ++i__) {
-	    wa1[i__] -= r__[i__ + j * r_dim1] * temp;
+        j = nsing - k + 1;
+        wa1[j] /= r__[j + j * r_dim1];
+        temp = wa1[j];
+        jm1 = j - 1;
+        if (jm1 < 1) {
+            goto L30;
+        }
+        i__2 = jm1;
+        for (i__ = 1; i__ <= i__2; ++i__) {
+            wa1[i__] -= r__[i__ + j * r_dim1] * temp;
 /* L20: */
-	}
+        }
 L30:
 /* L40: */
-	;
+        ;
     }
 L50:
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
-	l = ipvt[j];
-	x[l] = wa1[j];
+        l = ipvt[j];
+        x[l] = wa1[j];
 /* L60: */
     }
 
@@ -213,13 +212,13 @@ L50:
     iter = 0;
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
-	wa2[j] = diag[j] * x[j];
+        wa2[j] = diag[j] * x[j];
 /* L70: */
     }
-    dxnorm = enorm_(n, &wa2[1]);
+    dxnorm = enorm(*n, &wa2[1]);
     fp = dxnorm - *delta;
     if (fp <= p1 * *delta) {
-	goto L220;
+        goto L220;
     }
 
 /*     if the jacobian is not rank deficient, the newton */
@@ -228,31 +227,31 @@ L50:
 
     parl = zero;
     if (nsing < *n) {
-	goto L120;
+        goto L120;
     }
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
-	l = ipvt[j];
-	wa1[j] = diag[l] * (wa2[l] / dxnorm);
+        l = ipvt[j];
+        wa1[j] = diag[l] * (wa2[l] / dxnorm);
 /* L80: */
     }
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
-	sum = zero;
-	jm1 = j - 1;
-	if (jm1 < 1) {
-	    goto L100;
-	}
-	i__2 = jm1;
-	for (i__ = 1; i__ <= i__2; ++i__) {
-	    sum += r__[i__ + j * r_dim1] * wa1[i__];
+        sum = zero;
+        jm1 = j - 1;
+        if (jm1 < 1) {
+            goto L100;
+        }
+        i__2 = jm1;
+        for (i__ = 1; i__ <= i__2; ++i__) {
+            sum += r__[i__ + j * r_dim1] * wa1[i__];
 /* L90: */
-	}
+        }
 L100:
-	wa1[j] = (wa1[j] - sum) / r__[j + j * r_dim1];
+        wa1[j] = (wa1[j] - sum) / r__[j + j * r_dim1];
 /* L110: */
     }
-    temp = enorm_(n, &wa1[1]);
+    temp = enorm(*n, &wa1[1]);
     parl = fp / *delta / temp / temp;
 L120:
 
@@ -260,20 +259,20 @@ L120:
 
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
-	sum = zero;
-	i__2 = j;
-	for (i__ = 1; i__ <= i__2; ++i__) {
-	    sum += r__[i__ + j * r_dim1] * qtb[i__];
+        sum = zero;
+        i__2 = j;
+        for (i__ = 1; i__ <= i__2; ++i__) {
+            sum += r__[i__ + j * r_dim1] * qtb[i__];
 /* L130: */
-	}
-	l = ipvt[j];
-	wa1[j] = sum / diag[l];
+        }
+        l = ipvt[j];
+        wa1[j] = sum / diag[l];
 /* L140: */
     }
-    gnorm = enorm_(n, &wa1[1]);
+    gnorm = enorm(*n, &wa1[1]);
     paru = gnorm / *delta;
     if (paru == zero) {
-	paru = dwarf / fmin(*delta,p1);
+        paru = dwarf / fmin(*delta,p1);
     }
 
 /*     if the input par lies outside of the interval (parl,paru), */
@@ -282,7 +281,7 @@ L120:
     *par = fmax(*par,parl);
     *par = fmin(*par,paru);
     if (*par == zero) {
-	*par = gnorm / dxnorm;
+        *par = gnorm / dxnorm;
     }
 
 /*     beginning of an iteration. */
@@ -294,23 +293,23 @@ L150:
 
     if (*par == zero) {
 /* Computing MAX */
-	d__1 = dwarf, d__2 = p001 * paru;
-	*par = fmax(d__1,d__2);
+        d__1 = dwarf, d__2 = p001 * paru;
+        *par = fmax(d__1,d__2);
     }
     temp = sqrt(*par);
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
-	wa1[j] = temp * diag[j];
+        wa1[j] = temp * diag[j];
 /* L160: */
     }
     qrsolv_(n, &r__[r_offset], ldr, &ipvt[1], &wa1[1], &qtb[1], &x[1], &sdiag[
-	    1], &wa2[1]);
+            1], &wa2[1]);
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
-	wa2[j] = diag[j] * x[j];
+        wa2[j] = diag[j] * x[j];
 /* L170: */
     }
-    dxnorm = enorm_(n, &wa2[1]);
+    dxnorm = enorm(*n, &wa2[1]);
     temp = fp;
     fp = dxnorm - *delta;
 
@@ -319,45 +318,45 @@ L150:
 /*        is zero or the number of iterations has reached 10. */
 
     if (fabs(fp) <= p1 * *delta || parl == zero && fp <= temp && temp < zero ||
-	     iter == 10) {
-	goto L220;
+            iter == 10) {
+        goto L220;
     }
 
 /*        compute the newton correction. */
 
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
-	l = ipvt[j];
-	wa1[j] = diag[l] * (wa2[l] / dxnorm);
+        l = ipvt[j];
+        wa1[j] = diag[l] * (wa2[l] / dxnorm);
 /* L180: */
     }
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
-	wa1[j] /= sdiag[j];
-	temp = wa1[j];
-	jp1 = j + 1;
-	if (*n < jp1) {
-	    goto L200;
-	}
-	i__2 = *n;
-	for (i__ = jp1; i__ <= i__2; ++i__) {
-	    wa1[i__] -= r__[i__ + j * r_dim1] * temp;
+        wa1[j] /= sdiag[j];
+        temp = wa1[j];
+        jp1 = j + 1;
+        if (*n < jp1) {
+            goto L200;
+        }
+        i__2 = *n;
+        for (i__ = jp1; i__ <= i__2; ++i__) {
+            wa1[i__] -= r__[i__ + j * r_dim1] * temp;
 /* L190: */
-	}
+        }
 L200:
 /* L210: */
-	;
+        ;
     }
-    temp = enorm_(n, &wa1[1]);
+    temp = enorm(*n, &wa1[1]);
     parc = fp / *delta / temp / temp;
 
 /*        depending on the sign of the function, update parl or paru. */
 
     if (fp > zero) {
-	parl = fmax(parl,*par);
+        parl = fmax(parl,*par);
     }
     if (fp < zero) {
-	paru = fmin(paru,*par);
+        paru = fmin(paru,*par);
     }
 
 /*        compute an improved estimate for par. */
@@ -374,7 +373,7 @@ L220:
 /*     termination. */
 
     if (iter == 0) {
-	*par = zero;
+        *par = zero;
     }
     return 0;
 

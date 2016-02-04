@@ -39,7 +39,6 @@ static integer c__1 = 1;
     static integer kmax;
     static doublereal temp;
     static integer minmn;
-    extern doublereal enorm_(integer *, doublereal *);
     static doublereal epsmch;
     extern doublereal dpmpar_(integer *);
     static doublereal ajnorm;
@@ -138,7 +137,7 @@ static integer c__1 = 1;
 
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
-	acnorm[j] = enorm_(m, &a[j * a_dim1 + 1]);
+	acnorm[j] = enorm(*m, &a[j * a_dim1 + 1]);
 	rdiag[j] = acnorm[j];
 	wa[j] = rdiag[j];
 	if (*pivot) {
@@ -187,7 +186,7 @@ L40:
 /*        j-th column of a to a multiple of the j-th unit vector. */
 
 	i__2 = *m - j + 1;
-	ajnorm = enorm_(&i__2, &a[j + j * a_dim1]);
+	ajnorm = enorm(i__2, &a[j + j * a_dim1]);
 	if (ajnorm == zero) {
 	    goto L100;
 	}
@@ -237,7 +236,7 @@ L40:
 		goto L80;
 	    }
 	    i__3 = *m - j;
-	    rdiag[k] = enorm_(&i__3, &a[jp1 + k * a_dim1]);
+	    rdiag[k] = enorm(i__3, &a[jp1 + k * a_dim1]);
 	    wa[k] = rdiag[k];
 L80:
 /* L90: */

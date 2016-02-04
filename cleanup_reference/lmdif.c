@@ -15,7 +15,6 @@
 /* Table of constant values */
 
 static integer c__1 = 1;
-static logical c_true = true;
 
 /* Subroutine */ int lmdif_(U_fp fcn, integer *m, integer *n, doublereal *x, 
 	doublereal *fvec, doublereal *ftol, doublereal *xtol, doublereal *

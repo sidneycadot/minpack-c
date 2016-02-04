@@ -71,7 +71,6 @@ int main(void)
     {
         f_min = fmin(f_min, f_arr[i]);
         f_max = fmax(f_max, f_arr[i]);
-
     }
 
     printf("frequency range: %f .. %f\n", f_min, f_max);

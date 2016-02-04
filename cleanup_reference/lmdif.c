@@ -49,12 +49,6 @@ static logical c_true = true;
     static doublereal temp, temp1, temp2;
     static integer iflag;
     static doublereal delta;
-    extern /* Subroutine */ int qrfac_(integer *, integer *, doublereal *, 
-	    integer *, logical *, integer *, integer *, doublereal *, 
-	    doublereal *, doublereal *), lmpar_(integer *, doublereal *, 
-	    integer *, integer *, doublereal *, doublereal *, doublereal *, 
-	    doublereal *, doublereal *, doublereal *, doublereal *, 
-	    doublereal *);
     static doublereal ratio;
     static doublereal fnorm, gnorm;
     static doublereal pnorm, xnorm, fnorm1, actred, dirder, epsmch, prered;
@@ -325,13 +319,12 @@ L30:
     }
 L40:
 
-/*        compute the qr factorization of the jacobian. */
+    /*        compute the qr factorization of the jacobian. */
 
-    qrfac_(m, n, &fjac[fjac_offset], ldfjac, &c_true, &ipvt[1], n, &wa1[1], &
-	    wa2[1], &wa3[1]);
+    qrfac(*m, *n, &fjac[fjac_offset], *ldfjac, true, &ipvt[1], *n, &wa1[1], &wa2[1], &wa3[1]);
 
-/*        on the first iteration and if mode is 1, scale according */
-/*        to the norms of the columns of the initial jacobian. */
+    /*        on the first iteration and if mode is 1, scale according */
+    /*        to the norms of the columns of the initial jacobian. */
 
     if (iter != 1) {
 	goto L80;

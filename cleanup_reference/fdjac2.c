@@ -1,155 +1,103 @@
-/* fdjac2.f -- translated by f2c (version 20100827).
-   You must link the resulting object file with libf2c:
-	on Microsoft Windows system, link with libf2c.lib;
-	on Linux or Unix systems, link with .../path/to/libf2c.a -lm
-	or, if you install libf2c.a in a standard place, with -lf2c -lm
-	-- in that order, at the end of the command line, as in
-		cc *.o -lf2c -lm
-	Source for libf2c is in /netlib/f2c/libf2c.zip, e.g.,
 
-		http://www.netlib.org/f2c/libf2c.zip
-*/
+// fdjac2.f
 
 #include "my_include.h"
 
-/* Table of constant values */
-
-static integer c__1 = 1;
-
-/* Subroutine */ int fdjac2_(U_fp fcn, integer *m, integer *n, doublereal *x, 
-	doublereal *fvec, doublereal *fjac, integer *ldfjac, integer *iflag, 
-	doublereal *epsfcn, doublereal *wa)
+void fdjac2(U_fp fcn, int m, int n, double *x, double *fvec, double *fjac, const int ldfjac, int *iflag, const double epsfcn, double *wa)
 {
-    /* Initialized data */
+    // This subroutine computes a forward-difference approximation
+    // to the m by n Jacobian matrix associated with a specified
+    // problem of m functions in n variables.
 
-    static doublereal zero = 0.;
+    // The subroutine statement is
 
-    /* System generated locals */
-    integer fjac_dim1, fjac_offset, i__1, i__2;
+    //   subroutine fdjac2(fcn,m,n,x,fvec,fjac,ldfjac,iflag,epsfcn,wa)
 
-    /* Builtin functions */
-    double sqrt(doublereal);
+    // where
 
-    /* Local variables */
-    static doublereal h__;
-    static integer i__, j;
-    static doublereal eps, temp, epsmch;
-    extern doublereal dpmpar_(integer *);
+    //   fcn is the name of the user-supplied subroutine which
+    //     calculates the functions. fcn must be declared
+    //     in an external statement in the user calling
+    //     program, and should be written as follows.
 
-/*     ********** */
+    //     subroutine fcn(m,n,x,fvec,iflag)
+    //     integer m,n,iflag
+    //     double precision x(n),fvec(m)
+    //     ----------
+    //     calculate the functions at x and
+    //     return this vector in fvec.
+    //     ----------
+    //     return
+    //     end
 
-/*     subroutine fdjac2 */
+    //     The value of iflag should not be changed by fcn unless
+    //     the user wants to terminate execution of fdjac2.
+    //     In this case set iflag to a negative integer.
 
-/*     this subroutine computes a forward-difference approximation */
-/*     to the m by n jacobian matrix associated with a specified */
-/*     problem of m functions in n variables. */
+    //   m is a positive integer input variable set to the number
+    //     of functions.
 
-/*     the subroutine statement is */
+    //   n is a positive integer input variable set to the number
+    //     of variables. n must not exceed m.
 
-/*       subroutine fdjac2(fcn,m,n,x,fvec,fjac,ldfjac,iflag,epsfcn,wa) */
+    //   x is an input array of length n.
 
-/*     where */
+    //   fvec is an input array of length m which must contain the
+    //     functions evaluated at x.
 
-/*       fcn is the name of the user-supplied subroutine which */
-/*         calculates the functions. fcn must be declared */
-/*         in an external statement in the user calling */
-/*         program, and should be written as follows. */
+    //   fjac is an output m by n array which contains the
+    //     approximation to the Jacobian matrix evaluated at x.
 
-/*         subroutine fcn(m,n,x,fvec,iflag) */
-/*         integer m,n,iflag */
-/*         double precision x(n),fvec(m) */
-/*         ---------- */
-/*         calculate the functions at x and */
-/*         return this vector in fvec. */
-/*         ---------- */
-/*         return */
-/*         end */
+    //   ldfjac is a positive integer input variable not less than m
+    //     which specifies the leading dimension of the array fjac.
 
-/*         the value of iflag should not be changed by fcn unless */
-/*         the user wants to terminate execution of fdjac2. */
-/*         in this case set iflag to a negative integer. */
+    //   iflag is an integer variable which can be used to terminate
+    //     the execution of fdjac2. See description of fcn.
 
-/*       m is a positive integer input variable set to the number */
-/*         of functions. */
+    //   epsfcn is an input variable used in determining a suitable
+    //     step length for the forward-difference approximation. This
+    //     approximation assumes that the relative errors in the
+    //     functions are of the order of epsfcn. If epsfcn is less
+    //     than the machine precision, it is assumed that the relative
+    //     errors in the functions are of the order of the machine
+    //     precision.
 
-/*       n is a positive integer input variable set to the number */
-/*         of variables. n must not exceed m. */
+    //   wa is a work array of length m.
 
-/*       x is an input array of length n. */
+    // Subprograms called:
 
-/*       fvec is an input array of length m which must contain the */
-/*         functions evaluated at x. */
+    //   user-supplied ...... fcn
 
-/*       fjac is an output m by n array which contains the */
-/*         approximation to the jacobian matrix evaluated at x. */
+    // Argonne National Laboratory. MINPACK project. March 1980.
+    // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More
 
-/*       ldfjac is a positive integer input variable not less than m */
-/*         which specifies the leading dimension of the array fjac. */
+    const double eps = sqrt(fmax(epsfcn, MACHINE_EPSILON));
 
-/*       iflag is an integer variable which can be used to terminate */
-/*         the execution of fdjac2. see description of fcn. */
+    for (int j = 0; j < n; ++j)
+    {
+        const double temp = x[j];
 
-/*       epsfcn is an input variable used in determining a suitable */
-/*         step length for the forward-difference approximation. this */
-/*         approximation assumes that the relative errors in the */
-/*         functions are of the order of epsfcn. if epsfcn is less */
-/*         than the machine precision, it is assumed that the relative */
-/*         errors in the functions are of the order of the machine */
-/*         precision. */
+        double h = eps * fabs(temp);
 
-/*       wa is a work array of length m. */
+        if (h == 0.0)
+        {
+            h = eps;
+        }
 
-/*     subprograms called */
+        x[j] = temp + h;
 
-/*       user-supplied ...... fcn */
+        (*fcn)(&m, &n, x, wa, iflag);
 
-/*       minpack-supplied ... dpmpar */
+        if (*iflag < 0)
+        {
+            break;
+        }
 
-/*       fortran-supplied ... dabs,dmax1,dsqrt */
+        x[j] = temp;
 
-/*     argonne national laboratory. minpack project. march 1980. */
-/*     burton s. garbow, kenneth e. hillstrom, jorge j. more */
-
-/*     ********** */
-    /* Parameter adjustments */
-    --wa;
-    --fvec;
-    --x;
-    fjac_dim1 = *ldfjac;
-    fjac_offset = 1 + fjac_dim1;
-    fjac -= fjac_offset;
-
-    /* Function Body */
-
-/*     epsmch is the machine precision. */
-
-    epsmch = dpmpar_(&c__1);
-
-    eps = sqrt((fmax(*epsfcn,epsmch)));
-    i__1 = *n;
-    for (j = 1; j <= i__1; ++j) {
-	temp = x[j];
-	h__ = eps * fabs(temp);
-	if (h__ == zero) {
-	    h__ = eps;
-	}
-	x[j] = temp + h__;
-	(*fcn)(m, n, &x[1], &wa[1], iflag);
-	if (*iflag < 0) {
-	    goto L30;
-	}
-	x[j] = temp;
-	i__2 = *m;
-	for (i__ = 1; i__ <= i__2; ++i__) {
-	    fjac[i__ + j * fjac_dim1] = (wa[i__] - fvec[i__]) / h__;
-/* L10: */
-	}
-/* L20: */
+        for (int i = 0; i < m; ++i)
+        {
+            fjac[i + j * ldfjac] = (wa[i] - fvec[i]) / h;
+        }
     }
-L30:
-    return 0;
-
-/*     last card of subroutine fdjac2. */
-
-} /* fdjac2_ */
-
+}

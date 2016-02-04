@@ -57,9 +57,6 @@ static logical c_true = true;
 	    doublereal *);
     static doublereal ratio;
     static doublereal fnorm, gnorm;
-    extern /* Subroutine */ int fdjac2_(U_fp, integer *, integer *, 
-	    doublereal *, doublereal *, doublereal *, integer *, integer *, 
-	    doublereal *, doublereal *);
     static doublereal pnorm, xnorm, fnorm1, actred, dirder, epsmch, prered;
     extern doublereal dpmpar_(integer *);
 
@@ -308,8 +305,7 @@ L30:
 /*        calculate the jacobian matrix. */
 
     iflag = 2;
-    fdjac2_(fcn, m, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &
-	    iflag, epsfcn, &wa4[1]);
+    fdjac2(fcn, *m, *n, &x[1], &fvec[1], &fjac[fjac_offset], *ldfjac, &iflag, *epsfcn, &wa4[1]);
     *nfev += *n;
     if (iflag < 0) {
 	goto L300;

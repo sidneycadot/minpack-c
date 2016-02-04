@@ -4,7 +4,7 @@
 CFLAGS = -W -Wall -O3 -std=c99
 LDLIBS = -lm
 
-default : dependencies.pdf MyTestProgram TestVF
+default : dependencies.pdf Test1 TestVF
 
 # Checked:
 #   enorm()
@@ -13,14 +13,25 @@ default : dependencies.pdf MyTestProgram TestVF
 #   qrfac()
 #   qrsolve() -- but: recheck!
 
-MyTestProgram : MyTestProgram.c lmdif1.c lmdif.c enorm.c qrfac.c lmpar.c qrsolv.c fdjac2.c minpack_c.h
+Test1  : Test1.o  lmdif1.o lmdif.o enorm.o qrfac.o lmpar.o qrsolv.o fdjac2.o
+TestVF : TestVF.o lmdif1.o lmdif.o enorm.o qrfac.o lmpar.o qrsolv.o fdjac2.o
 
-TestVF : TestVF.c lmdif1.c lmdif.c enorm.c qrfac.c lmpar.c qrsolv.c fdjac2.c minpack_c.h
+Test1.o  : Test1.c  minpack_c.h
+TestVF.o : TestVF.c minpack_c.h
+
+lmdif1.o : lmdif1.c minpack_c.h
+lmdif.o  : lmdif.c  minpack_c.h
+enorm.o  : enorm.c  minpack_c.h
+qrfac.o  : qrfac.c  minpack_c.h
+lmpar.o  : lmpar.c  minpack_c.h
+qrsolv.o : qrsolv.c minpack_c.h
+fdjac2.o : fdjac2.c minpack_c.h
+dpmpar.o : dpmpar.c minpack_c.h
 
 dependencies.pdf : dependencies.dot
 	dot -Tpdf dependencies.dot -o $@
-	gs -o $@.temp -sDEVICE=pdfwrite -sPAPERSIZE=a4 -dFIXEDMEDIA -dPDFFitPage -dCompatibilityLevel=1.4 $@
-	mv $@.temp $@
+	#gs -o $@.temp -sDEVICE=pdfwrite -sPAPERSIZE=a4 -dFIXEDMEDIA -dPDFFitPage -dCompatibilityLevel=1.4 $@
+	#mv $@.temp $@
 
 clean :
-	$(RM) *.o MyTestProgram TestVF dependencies.pdf
+	$(RM) *.o Test1 TestVF dependencies.pdf

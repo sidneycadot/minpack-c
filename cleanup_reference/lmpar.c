@@ -1,8 +1,9 @@
-// // lmpar.f -- translated by f2c (version 20100827).
+
+// lmpar.f -- translated by f2c (version 20100827).
 
 #include "my_include.h"
 
-void lmpar(const int n, double *r__, const int ldr, const int *ipvt, const double *diag, double *qtb, const double delta,
+void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double *diag, double *qtb, const double delta,
            double *par, double *x, double *sdiag, double *wa1,  double *wa2)
 {
     // Given an m by n matrix a, an n by n nonsingular diagonal
@@ -95,28 +96,20 @@ void lmpar(const int n, double *r__, const int ldr, const int *ipvt, const doubl
     const double p1   = 0.1;
     const double p001 = 0.001;
 
-    // Parameter adjustments
-
-    --wa2;
-    --wa1;
-    --sdiag;
-    --x;
-    --qtb;
-    --diag;
-    --ipvt;
-
     // Compute and store in x the Gauss-Newton direction. If the
     // Jacobian is rank-deficient, obtain a least squares solution.
 
     int nsing = n;
 
-    for (int j = 1; j <= n; ++j)
+    for (int j = 0; j < n; ++j)
     {
         wa1[j] = qtb[j];
-        if (r__[j + j * ldr - (1 + ldr)] == 0.0 && nsing == n)
+
+        if (r[j + j * ldr] == 0.0 && nsing == n)
         {
-            nsing = j - 1;
+            nsing = j;
         }
+
         if (nsing < n)
         {
             wa1[j] = 0;
@@ -125,21 +118,21 @@ void lmpar(const int n, double *r__, const int ldr, const int *ipvt, const doubl
 
     for (int k = 1; k <= nsing; ++k)
     {
-        int j = nsing - k + 1;
+        const int j = nsing - k;
 
-        wa1[j] /= r__[j + j * ldr - (1 + ldr)];
+        wa1[j] /= r[j + j * ldr];
 
         const double temp = wa1[j];
 
-        for (int i = 1; i <= j - 1; ++i)
+        for (int i = 0; i < j; ++i)
         {
-            wa1[i] -= r__[i + j * ldr - (1 + ldr)] * temp;
+            wa1[i] -= r[i + j * ldr ] * temp;
         }
     }
 
-    for (int j = 1; j <= n; ++j)
+    for (int j = 0; j < n; ++j)
     {
-        const int l = ipvt[j];
+        const int l = ipvt[j] - PIVOT_OFFSET;
         x[l] = wa1[j];
     }
 
@@ -149,63 +142,63 @@ void lmpar(const int n, double *r__, const int ldr, const int *ipvt, const doubl
 
     int iter = 0;
 
-    for (int j = 1; j <= n; ++j)
+    for (int j = 0; j < n; ++j)
     {
         wa2[j] = diag[j] * x[j];
     }
 
-    double dxnorm = enorm(n, &wa2[1]);
+    double dxnorm = enorm(n, wa2);
     double fp = dxnorm - delta;
 
     if (fp > p1 * delta)
     {
         // If the Jacobian is not rank deficient, the Newton
         // step provides a lower bound, parl, for the zero of
-        // the function. otherwise set this bound to zero.
+        // the function. Otherwise set this bound to zero.
 
         double parl = 0.0;
 
         if (nsing >= n)
         {
-            for (int j = 1; j <= n; ++j)
+            for (int j = 0; j < n; ++j)
             {
-                const int l = ipvt[j];
+                const int l = ipvt[j] - PIVOT_OFFSET;
                 wa1[j] = diag[l] * (wa2[l] / dxnorm);
             }
 
-            for (int j = 1; j <= n; ++j)
+            for (int j = 0; j < n; ++j)
             {
                 double sum = 0.0;
 
-                for (int i = 1; i <= j - 1; ++i)
+                for (int i = 0; i < j; ++i)
                 {
-                    sum += r__[i + j * ldr - (1 + ldr)] * wa1[i];
+                    sum += r[i + j * ldr] * wa1[i];
                 }
 
-                wa1[j] = (wa1[j] - sum) / r__[j + j * ldr - (1 + ldr)];
+                wa1[j] = (wa1[j] - sum) / r[j + j * ldr];
             }
 
-            const double temp = enorm(n, &wa1[1]);
+            const double temp = enorm(n, wa1);
 
             parl = fp / delta / temp / temp;
         }
 
         // Calculate an upper bound, paru, for the zero of the function.
 
-        for (int j = 1; j <= n; ++j)
+        for (int j = 0; j < n; ++j)
         {
             double sum = 0.0;
 
-            for (int i = 1; i <= j; ++i)
+            for (int i = 0; i < j + 1; ++i)
             {
-                sum += r__[i + j * ldr - (1 + ldr)] * qtb[i];
+                sum += r[i + j * ldr] * qtb[i];
             }
 
-            const int l = ipvt[j];
+            const int l = ipvt[j] - PIVOT_OFFSET;
             wa1[j] = sum / diag[l];
         }
 
-        const double gnorm = enorm(n, &wa1[1]);
+        const double gnorm = enorm(n, wa1);
 
         double paru = gnorm / delta;
 
@@ -240,19 +233,19 @@ void lmpar(const int n, double *r__, const int ldr, const int *ipvt, const doubl
 
             double temp = sqrt(*par);
 
-            for (int j = 1; j <= n; ++j)
+            for (int j = 0; j < n; ++j)
             {
                 wa1[j] = temp * diag[j];
             }
 
-            qrsolv(n, &r__[1 + ldr - (1 + ldr)], ldr, &ipvt[1], &wa1[1], &qtb[1], &x[1], &sdiag[1], &wa2[1]);
+            qrsolv(n, r, ldr, ipvt, wa1, qtb, x, sdiag, wa2);
 
-            for (int j = 1; j <= n; ++j)
+            for (int j = 0; j < n; ++j)
             {
                 wa2[j] = diag[j] * x[j];
             }
 
-            dxnorm = enorm(n, &wa2[1]);
+            dxnorm = enorm(n, wa2);
             temp = fp;
             fp = dxnorm - delta;
 
@@ -267,25 +260,25 @@ void lmpar(const int n, double *r__, const int ldr, const int *ipvt, const doubl
 
             // Compute the Newton correction.
 
-            for (int j = 1; j <= n; ++j)
+            for (int j = 0; j < n; ++j)
             {
-                const int l = ipvt[j];
+                const int l = ipvt[j] - PIVOT_OFFSET;
                 wa1[j] = diag[l] * (wa2[l] / dxnorm);
             }
 
-            for (int j = 1; j <= n; ++j)
+            for (int j = 0; j < n; ++j)
             {
                 wa1[j] /= sdiag[j];
 
                 const double temp = wa1[j];
 
-                for (int i = j + 1; i <= n; ++i)
+                for (int i = j + 1; i < n; ++i)
                 {
-                    wa1[i] -= r__[i + j * ldr - (1 + ldr)] * temp;
+                    wa1[i] -= r[i + j * ldr] * temp;
                 }
             }
 
-            temp = enorm(n, &wa1[1]);
+            temp = enorm(n, wa1);
 
             const double parc = fp / delta / temp / temp;
 

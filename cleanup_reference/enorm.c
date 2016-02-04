@@ -1,7 +1,7 @@
 
 // enorm.f -- translated by f2c (version 20100827).
 
-#include "my_include.h"
+#include "minpack_c.h"
 
 double enorm(const int n, const double *x)
 {

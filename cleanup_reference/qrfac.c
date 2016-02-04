@@ -1,6 +1,6 @@
 // qrfac.f -- translated by f2c (version 20100827).
 
-#include "my_include.h"
+#include "minpack_c.h"
 
 void qrfac(const int m, const int n, double *a, const int lda, const bool pivot, int *ipvt, const int lipvt, double *rdiag, double *acnorm, double *wa)
 {

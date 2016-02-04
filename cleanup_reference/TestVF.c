@@ -6,7 +6,8 @@
 #include <math.h>
 #include <assert.h>
 #include <stdio.h>
-#include "my_include.h"
+
+#include "minpack_c.h"
 
 double v_arr[3001];
 double f_arr[3001];
@@ -90,10 +91,10 @@ int main(void)
     x[3] = 1.5;
     x[4] = 0.40;
 
-    double tol = 1e-12;
+    const double tol = 1e-12;
     int info;
 
-    lmdif1_(fcn, &m, &n, x, fvec, &tol, &info, iwa, wa, &lwa);
+    lmdif1(fcn, m, n, x, fvec, tol, &info, iwa, wa, lwa);
 
     printf("info: %d\n", info);
 

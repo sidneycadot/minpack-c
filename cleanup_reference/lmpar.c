@@ -1,7 +1,7 @@
 
 // lmpar.f -- translated by f2c (version 20100827).
 
-#include "my_include.h"
+#include "minpack_c.h"
 
 void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double *diag, double *qtb, const double delta,
            double *par, double *x, double *sdiag, double *wa1,  double *wa2)
@@ -88,7 +88,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
 
     // Subprograms called:
 
-    //   minpack-supplied ... enorm, qrsolv
+    //   MINPACK-supplied ... enorm, qrsolv
 
     // Argonne National Laboratory. MINPACK project. March 1980.
     // Burton S. Garbow, Kenneth E. Hillstrom, Jorge J. More

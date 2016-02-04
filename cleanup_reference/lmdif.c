@@ -1,8 +1,8 @@
 // lmdif.f -- translated by f2c (version 20100827).
 
-#include "my_include.h"
+#include "minpack_c.h"
 
-void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const double ftol, const double xtol, const double gtol, const int maxfev,
+void lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, const double ftol, const double xtol, const double gtol, const int maxfev,
            const double epsfcn, double *diag, const int mode, const double factor, const int nprint, int *info, int *nfev,
            double *fjac, const int ldfjac, int *ipvt, double *qtf, double *wa1, double *wa2, double *wa3, double *wa4)
 {
@@ -186,31 +186,15 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
 
     // Local variables
 
-    double temp, temp1, temp2;
-    double delta;
-    double fnorm, gnorm;
-    double pnorm, xnorm, fnorm1, actred, dirder, prered;
+    double delta = 666.0; // Initialize to suppress warning.
+    double xnorm = 666.0; // Initialize to suppress warning.
 
     // Parameter adjustments
 
-    --wa4;
-    --fvec;
-    --wa3;
-    --wa2;
-    --wa1;
-    --qtf;
-    --ipvt;
-    --diag;
-    --x;
-
-    const int fjac_dim1 = ldfjac;
-    const int fjac_offset = 1 + fjac_dim1;
-
-    fjac -= fjac_offset;
-
     *info = 0;
-    int iflag = 0;
     *nfev = 0;
+
+    int iflag = 0;
 
     // Check the input parameters for errors.
 
@@ -221,7 +205,7 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
 
     if (mode == 2)
     {
-        for (int j = 1; j <= n; ++j)
+        for (int j = 0; j < n; ++j)
         {
             if (diag[j] <= 0.0)
             {
@@ -234,7 +218,7 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
     // and calculate its norm.
 
     iflag = 1;
-    (*fcn)(m, n, &x[1], &fvec[1], &iflag);
+    (*fcn)(m, n, x, fvec, &iflag);
     *nfev = 1;
 
     if (iflag < 0)
@@ -242,21 +226,21 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
         goto L_TERMINATE;
     }
 
-    fnorm = enorm(m, &fvec[1]);
+    double fnorm = enorm(m, fvec);
 
     // Initialize levenberg-marquardt parameter and iteration counter.
 
     double par = 0.0;
     int iter = 1;
 
-    for (;;)
+    for (;;) // Outer loop.
     {
         // Beginning of the outer loop.
 
         // Calculate the Jacobian matrix.
 
         iflag = 2;
-        fdjac2(fcn, m, n, &x[1], &fvec[1], &fjac[fjac_offset], ldfjac, &iflag, epsfcn, &wa4[1]);
+        fdjac2(fcn, m, n, x, fvec, fjac, ldfjac, &iflag, epsfcn, wa4);
         *nfev += n;
 
         if (iflag < 0)
@@ -271,7 +255,7 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
             iflag = 0;
             if ((iter - 1) % nprint == 0)
             {
-                (*fcn)(m, n, &x[1], &fvec[1], &iflag);
+                (*fcn)(m, n, x, fvec, &iflag);
             }
 
             if (iflag < 0)
@@ -280,9 +264,9 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
             }
         }
 
-        // Compute the qr factorization of the Jacobian.
+        // Compute the QR factorization of the Jacobian.
 
-        qrfac(m, n, &fjac[fjac_offset], ldfjac, true, &ipvt[1], n, &wa1[1], &wa2[1], &wa3[1]);
+        qrfac(m, n, fjac, ldfjac, true, ipvt, n, wa1, wa2, wa3);
 
         // On the first iteration and if mode is 1, scale according
         // to the norms of the columns of the initial Jacobian.
@@ -291,7 +275,7 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
         {
             if (mode != 2)
             {
-                for (int j = 1; j <= n; ++j)
+                for (int j = 0; j < n; ++j)
                 {
                     diag[j] = wa2[j];
 
@@ -305,12 +289,12 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
             // On the first iteration, calculate the norm of the scaled x
             // and initialize the step bound delta.
 
-            for (int j = 1; j <= n; ++j)
+            for (int j = 0; j < n; ++j)
             {
                 wa3[j] = diag[j] * x[j];
             }
 
-            xnorm = enorm(n, &wa3[1]);
+            xnorm = enorm(n, wa3);
             delta = factor * xnorm;
 
             if (delta == 0.0)
@@ -319,53 +303,54 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
             }
         }
 
-        // form (q transpose)*fvec and store the first n components in
+        // Form (q transpose)*fvec and store the first n components in
         // qtf.
 
-        for (int i = 1; i <= m; ++i)
+        for (int i = 0; i < m; ++i)
         {
             wa4[i] = fvec[i];
         }
 
-        for (int j = 1; j <= n; ++j)
+        for (int j = 0; j < n; ++j)
         {
-            if (fjac[j + j * fjac_dim1] != 0.0)
+            if (fjac[j + j * ldfjac] != 0.0)
             {
                 double sum = 0.0;
 
-                for (int i = j; i <= m; ++i)
+                for (int i = j; i < m; ++i)
                 {
-                    sum += fjac[i + j * fjac_dim1] * wa4[i];
+                    sum += fjac[i + j * ldfjac] * wa4[i];
                 }
 
-                temp = -sum / fjac[j + j * fjac_dim1];
+                const double temp = -sum / fjac[j + j * ldfjac];
 
-                for (int i = j; i <= m; ++i)
+                for (int i = j; i < m; ++i)
                 {
-                    wa4[i] += fjac[i + j * fjac_dim1] * temp;
+                    wa4[i] += fjac[i + j * ldfjac] * temp;
                 }
             }
 
-            fjac[j + j * fjac_dim1] = wa1[j];
+            fjac[j + j * ldfjac] = wa1[j];
             qtf[j] = wa4[j];
         }
 
         // Compute the norm of the scaled gradient.
 
-        gnorm = 0.0;
+        double gnorm = 0.0;
+
         if (fnorm != 0.0)
         {
-            for (int j = 1; j <= n; ++j)
+            for (int j = 0; j < n; ++j)
             {
-                const int l = ipvt[j];
+                const int l = ipvt[j] - PIVOT_OFFSET;
 
                 if (wa2[l] != 0.0)
                 {
                     double sum = 0.0;
 
-                    for (int i = 1; i <= j; ++i)
+                    for (int i = 0; i < j + 1; ++i)
                     {
-                        sum += fjac[i + j * fjac_dim1] * (qtf[i] / fnorm);
+                        sum += fjac[i + j * ldfjac] * (qtf[i] / fnorm);
                     }
                     gnorm = fmax(gnorm, fabs(sum / wa2[l]));
                 }
@@ -388,30 +373,30 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
 
         if (mode != 2)
         {
-            for (int j = 1; j <= n; ++j)
+            for (int j = 0; j < n; ++j)
             {
                 diag[j] = fmax(diag[j], wa2[j]);
             }
         }
 
-        for (;;)
+        for (;;) // Inner loop.
         {
             // Beginning of the inner loop.
 
             // Determine the Levenberg-Marquardt parameter.
 
-            lmpar(n, &fjac[fjac_offset], ldfjac, &ipvt[1], &diag[1], &qtf[1], delta, &par, &wa1[1], &wa2[1], &wa3[1], &wa4[1]);
+            lmpar(n, fjac, ldfjac, ipvt, diag, qtf, delta, &par, wa1, wa2, wa3, wa4);
 
             // Store the direction p and x + p. calculate the norm of p.
 
-            for (int j = 1; j <= n; ++j)
+            for (int j = 0; j < n; ++j)
             {
                 wa1[j] = -wa1[j];
                 wa2[j] = x[j] + wa1[j];
                 wa3[j] = diag[j] * wa1[j];
             }
 
-            pnorm = enorm(n, &wa3[1]);
+            const double pnorm = enorm(n, wa3);
 
             // On the first iteration, adjust the initial step bound.
 
@@ -423,7 +408,7 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
             // Evaluate the function at x + p and calculate its norm.
 
             iflag = 1;
-            (*fcn)(m, n, &wa2[1], &wa4[1], &iflag);
+            (*fcn)(m, n, wa2, wa4, &iflag);
             ++(*nfev);
 
             if (iflag < 0)
@@ -431,35 +416,38 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
                 goto L_TERMINATE;
             }
 
-            fnorm1 = enorm(m, &wa4[1]);
+            const double fnorm1 = enorm(m, wa4);
 
             // Compute the scaled actual reduction.
 
-            actred = -1.0;
+            double actred = -1.0;
+
             if (p1 * fnorm1 < fnorm)
             {
                 actred = 1.0 - square(fnorm1 / fnorm);
             }
 
             // Compute the scaled predicted reduction and
-            // The scaled directional derivative.
+            // the scaled directional derivative.
 
-            for (int j = 1; j <= n; ++j)
+            for (int j = 0; j < n; ++j)
             {
                 wa3[j] = 0.0;
-                const int l = ipvt[j];
-                temp = wa1[l];
 
-                for (int i = 1; i <= j; ++i)
+                const int l = ipvt[j] - PIVOT_OFFSET;
+
+                const double temp = wa1[l];
+
+                for (int i = 0; i < j + 1; ++i)
                 {
-                    wa3[i] += fjac[i + j * fjac_dim1] * temp;
+                    wa3[i] += fjac[i + j * ldfjac] * temp;
                 }
             }
 
-            temp1 = enorm(n, &wa3[1]) / fnorm;
-            temp2 = sqrt(par) * pnorm / fnorm;
+            const double temp1 = enorm(n, wa3) / fnorm;
+            const double temp2 = sqrt(par) * pnorm / fnorm;
 
-            const double prered = square(temp1) + square(temp2) / p5;
+            const double prered = square(temp1) + 2 * square(temp2);
             const double dirder = -(square(temp1) + square(temp2));
 
             // Compute the ratio of the actual to the predicted
@@ -476,12 +464,13 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
 
             if (ratio <= p25)
             {
+                double temp;
+
                 if (actred >= 0.0)
                 {
                     temp = p5;
                 }
-
-                if (actred < 0.0)
+                else
                 {
                     temp = p5 * dirder / (dirder + p5 * actred);
                 }
@@ -504,21 +493,22 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
 
             if (ratio >= p0001)
             {
-                // Successful iteration. update x, fvec, and their norms.
+                // Successful iteration. Update x, fvec, and their norms.
 
-                for (int j = 1; j <= n; ++j)
+                for (int j = 0; j < n; ++j)
                 {
                     x[j] = wa2[j];
                     wa2[j] = diag[j] * x[j];
                 }
 
-                for (int i = 1; i <= m; ++i)
+                for (int i = 0; i < m; ++i)
                 {
                     fvec[i] = wa4[i];
                 }
 
-                xnorm = enorm(n, &wa2[1]);
+                xnorm = enorm(n, wa2);
                 fnorm = fnorm1;
+
                 ++iter;
             }
 
@@ -578,7 +568,6 @@ void lmdif(U_fp fcn, const int m, const int n, double *x, double *fvec, const do
                 break;
             }
         }
-
         // End of the outer loop.
     }
 
@@ -594,6 +583,6 @@ L_TERMINATE:
     iflag = 0;
     if (nprint > 0)
     {
-        (*fcn)(m, n, &x[1], &fvec[1], &iflag);
+        (*fcn)(m, n, x, fvec, &iflag);
     }
 }

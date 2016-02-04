@@ -1,7 +1,7 @@
 
 // qrsolv.f
 
-#include "my_include.h"
+#include "minpack_c.h"
 
 void qrsolv(const int n, double *r, const int ldr, const int *ipvt, const double *diag, const double *qtb, double *x, double *sdiag, double *wa)
 {

@@ -94,7 +94,7 @@ void lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec,
 
     //   factor is a positive input variable used in determining the
     //     initial step bound. This bound is set to the product of
-    //     factor and the euclidean norm of diag*x if nonzero, or else
+    //     factor and the Euclidean norm of diag*x if nonzero, or else
     //     to factor itself. In most cases factor should lie in the
     //     interval (.1, 100.). 100. is a generally recommended value.
 
@@ -186,8 +186,8 @@ void lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec,
 
     // Local variables
 
-    double delta = 666.0; // Initialize to suppress warning.
-    double xnorm = 666.0; // Initialize to suppress warning.
+    double delta = 0.0; // Initialize to suppress warning.
+    double xnorm = 0.0; // Initialize to suppress warning.
 
     // Parameter adjustments
 

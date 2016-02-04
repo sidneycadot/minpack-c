@@ -3,7 +3,7 @@
 
 #include "minpack_c.h"
 
-void fdjac2(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, double *fjac, const int ldfjac, int *iflag, const double epsfcn, double *wa)
+void fdjac2(lmdif_fcn_ptr fcn, const int m, const int n, double *x, const double *fvec, double *fjac, const int ldfjac, int *iflag, const double epsfcn, double *wa)
 {
     // This subroutine computes a forward-difference approximation
     // to the m by n Jacobian matrix associated with a specified

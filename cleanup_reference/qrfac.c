@@ -80,9 +80,8 @@ void qrfac(const int m, const int n, double *a, const int lda, const bool pivot,
 
     for (int j = 0; j < n; ++j)
     {
-        acnorm[j] = enorm(m, &a[j * lda]);
-        rdiag[j] = acnorm[j];
-        wa[j] = rdiag[j];
+        wa[j] = rdiag[j] = acnorm[j] = enorm(m, &a[j * lda]);
+
         if (pivot)
         {
             ipvt[j] = j + PIVOT_OFFSET;
@@ -167,14 +166,11 @@ void qrfac(const int m, const int n, double *a, const int lda, const bool pivot,
 
                 if (pivot && rdiag[k] != 0.0)
                 {
-                    const double temp = a[j + k * lda] / rdiag[k];
-
-                    rdiag[k] *= sqrt(fmax(0.0, 1.0 - square(temp)));
+                    rdiag[k] *= sqrt(fmax(0.0, 1.0 - square(a[j + k * lda] / rdiag[k])));
 
                     if (p05 * square(rdiag[k] / wa[k]) <= MACHINE_EPSILON)
                     {
-                        rdiag[k] = enorm(m - (j + 1), &a[j + 1 + k * lda]);
-                        wa[k] = rdiag[k];
+                        wa[k] = rdiag[k] = enorm(m - (j + 1), &a[(j + 1) + k * lda]);
                     }
                 }
             }

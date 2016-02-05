@@ -45,7 +45,7 @@ int main()
     double acnorm[100];
     double wa[100];
 
-    qrfac(m, n, a, lda, false, ipvt, lipvt, rdiag, acnorm, wa);
+    qrfac(m, n, a, lda, true, ipvt, lipvt, rdiag, acnorm, wa);
 
     printf("'a' after QR factorization:\n\n");
 

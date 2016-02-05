@@ -4,9 +4,11 @@
 CFLAGS = -W -Wall -O3 -std=c99
 LDLIBS = -lm
 
-default : TestVF
+default : TestVF test_qrfac
 
 TestVF : TestVF.o lmdif1.o lmdif.o enorm.o qrfac.o lmpar.o qrsolv.o fdjac2.o
+
+test_qrfac : test_qrfac.o qrfac.o enorm.o
 
 TestVF.o : TestVF.c minpack_c.h
 
@@ -17,6 +19,8 @@ qrfac.o  : qrfac.c  minpack_c.h
 lmpar.o  : lmpar.c  minpack_c.h
 qrsolv.o : qrsolv.c minpack_c.h
 fdjac2.o : fdjac2.c minpack_c.h
+
+test_qrfac.o : test_qrfac.c
 
 clean :
 	$(RM) *.o TestVF

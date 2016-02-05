@@ -6,81 +6,77 @@
 
 #include "minpack_c.h"
 
-#define nr 3
-#define nc 7
-
 int main()
 {
-  int m = 3; // number of rows
-  int n = 7; // number of columns
-  int lda = 5; // leading-dimension increment (must be >= m)
+    const int m = 3; // number of rows
+    const int n = 7; // number of columns
+    const int lda = 5; // leading-dimension increment (must be >= m)
 
-  double a[n * lda];
+    double a[n * lda];
 
-  printf("\n*** test_qrfac ***\n\n");
+    printf("\n*** test_qrfac ***\n\n");
 
-  for (int i = 0; i < m; ++i)
+    for (int i = 0; i < m; ++i)
     {
-      for (int j = 0; j < n; ++j)
-	{
-	  const int z = 10 * (i + 1) + (j + 1);
-	  a[j * lda + i] = 1/sin(z);
-	}
+        for (int j = 0; j < n; ++j)
+        {
+            const int z = 10 * (i + 1) + (j + 1);
+            a[j * lda + i] = 1.0 / sin(z);
+        }
     }
 
-  printf("'a' prior to QR factorization:\n\n");
+    printf("'a' prior to QR factorization:\n\n");
 
-  for (int i = 0; i < m; ++i)
+    for (int i = 0; i < m; ++i)
     {
-      for (int j = 0; j < n; ++j)
-	{
-	  printf("%15f", a[j * lda + i]);
-	}
-      printf("\n");
+        for (int j = 0; j < n; ++j)
+        {
+            printf("%15f", a[j * lda + i]);
+        }
+        printf("\n");
     }
 
-  printf("\n");
+    printf("\n");
 
-  int ipvt[100];
-  int lipvt = 100;
+    int ipvt[100];
+    int lipvt = 100;
 
-  double rdiag[100];
-  double acnorm[100];
-  double wa[100];
+    double rdiag[100];
+    double acnorm[100];
+    double wa[100];
 
-  qrfac(m, n, a, lda, false, ipvt, lipvt, rdiag, acnorm, wa);
+    qrfac(m, n, a, lda, false, ipvt, lipvt, rdiag, acnorm, wa);
 
-  printf("'a' after QR factorization:\n\n");
+    printf("'a' after QR factorization:\n\n");
 
-  for (int i = 0; i < m; ++i)
+    for (int i = 0; i < m; ++i)
     {
-      for (int j = 0; j < n; ++j)
-	{
-	  printf("%15f", a[j * lda + i]);
-	}
-      printf("\n");
+        for (int j = 0; j < n; ++j)
+        {
+            printf("%15f", a[j * lda + i]);
+        }
+        printf("\n");
     }
 
-  printf("\n");
+    printf("\n");
 
-  printf("'rdiag' after QR factorization:\n\n");
+    printf("'rdiag' after QR factorization:\n\n");
 
-  for (int i = 0; i < n; ++i)
+    for (int i = 0; i < n; ++i)
     {
-      printf("%15f", rdiag[i]);
+        printf("%15f", rdiag[i]);
     }
 
-  printf("\n\n");
+    printf("\n\n");
 
-  printf("'acnorm' after QR factorization:\n\n");
+    printf("'acnorm' after QR factorization:\n\n");
 
-  for (int i = 0; i < n; ++i)
+    for (int i = 0; i < n; ++i)
     {
-      printf("%15f", acnorm[i]);
+        printf("%15f", acnorm[i]);
     }
 
-  printf("\n\n");
+    printf("\n\n");
 
-  return 0;
+    return 0;
 }
-

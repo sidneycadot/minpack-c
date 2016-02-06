@@ -10,7 +10,7 @@
 		http://www.netlib.org/f2c/libf2c.zip
 */
 
-#include "my_include.h"
+#include "minpack_c.h"
 
 /* Subroutine */ int qrsolv_(integer *n, doublereal *r__, integer *ldr, 
 	integer *ipvt, doublereal *diag, doublereal *qtb, doublereal *x, 

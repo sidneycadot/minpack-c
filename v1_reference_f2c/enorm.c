@@ -10,7 +10,7 @@
 		http://www.netlib.org/f2c/libf2c.zip
 */
 
-#include "my_include.h"
+#include "minpack_c.h"
 
 doublereal enorm_(integer *n, doublereal *x)
 {

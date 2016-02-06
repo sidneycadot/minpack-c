@@ -8,17 +8,16 @@ default : TestVF
 
 TestVF : TestVF.o lmdif1.o lmdif.o enorm.o qrfac.o lmpar.o qrsolv.o fdjac2.o dpmpar.o
 
-TestVF.o : TestVF.c my_include.h
+TestVF.o : TestVF.c minpack_c.h
 
-lmdif1.o : lmdif1.c my_include.h
-lmdif.o  : lmdif.c  my_include.h
-enorm.o  : enorm.c  my_include.h
-qrfac.o  : qrfac.c  my_include.h
-lmpar.o  : lmpar.c  my_include.h
-qrsolv.o : qrsolv.c my_include.h
-fdjac2.o : fdjac2.c my_include.h
-dpmpar.o : dpmpar.c my_include.h
-
+lmdif1.o : lmdif1.c minpack_c.h
+lmdif.o  : lmdif.c  minpack_c.h
+enorm.o  : enorm.c  minpack_c.h
+qrfac.o  : qrfac.c  minpack_c.h
+lmpar.o  : lmpar.c  minpack_c.h
+qrsolv.o : qrsolv.c minpack_c.h
+fdjac2.o : fdjac2.c minpack_c.h
+dpmpar.o : dpmpar.c minpack_c.h
 
 clean :
 	$(RM) *.o TestVF

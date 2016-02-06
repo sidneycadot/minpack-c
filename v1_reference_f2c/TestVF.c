@@ -6,7 +6,7 @@
 #include <math.h>
 #include <assert.h>
 #include <stdio.h>
-#include "my_include.h"
+#include "minpack_c.h"
 
 double v_arr[3001];
 double f_arr[3001];
@@ -58,6 +58,7 @@ int main(void)
     integer n = 5; // number of parameters;
 
     FILE * f = fopen("vf.txt", "r");
+    assert(f != NULL);
 
     for (int i = 0; i < m; ++i)
     {

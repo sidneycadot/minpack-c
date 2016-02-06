@@ -10,7 +10,7 @@
 		http://www.netlib.org/f2c/libf2c.zip
 */
 
-#include "my_include.h"
+#include "minpack_c.h"
 
 /* Subroutine */ int lmdif1_(U_fp fcn, integer *m, integer *n, doublereal *x, 
 	doublereal *fvec, doublereal *tol, integer *info, integer *iwa, 

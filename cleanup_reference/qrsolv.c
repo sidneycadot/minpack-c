@@ -112,14 +112,14 @@ void qrsolv(const int n, double *r, const int ldr, const int *ipvt, const double
 
             for (int k = j; k < n; ++k)
             {
-                // Determine a givens rotation which eliminates the
+                // Determine a Givens rotation which eliminates the
                 // appropriate element in the current row of d.
 
                 if (sdiag[k] != 0.0)
                 {
                     double sin_, cos_;
 
-                    if (fabs(r[(k) + (k) * ldr]) < fabs(sdiag[k]))
+                    if (fabs(r[k + k * ldr]) < fabs(sdiag[k]))
                     {
                         const double cot_ = r[k + k * ldr] / sdiag[k];
                         sin_ = 1.0 / sqrt(1.0 + square(cot_));

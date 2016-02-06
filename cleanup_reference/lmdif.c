@@ -184,12 +184,12 @@ void lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec,
     const double p75   = 0.75;
     const double p0001 = 1e-4;
 
-    // Local variables
+    // Local variables.
 
     double delta = 0.0; // Initialize to suppress warning.
     double xnorm = 0.0; // Initialize to suppress warning.
 
-    // Parameter adjustments
+    // Parameter adjustments.
 
     *info = 0;
     *nfev = 0;
@@ -228,7 +228,7 @@ void lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec,
 
     double fnorm = enorm(m, fvec);
 
-    // Initialize levenberg-marquardt parameter and iteration counter.
+    // Initialize Levenberg-Marquardt parameter and iteration counter.
 
     double par = 0.0;
     int iter = 1;
@@ -451,7 +451,7 @@ void lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec,
             const double dirder = -(square(temp1) + square(temp2));
 
             // Compute the ratio of the actual to the predicted
-            // Reduction.
+            // reduction.
 
             double ratio = 0.0;
 

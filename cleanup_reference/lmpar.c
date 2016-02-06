@@ -126,7 +126,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
 
         for (int i = 0; i < j; ++i)
         {
-            wa1[i] -= r[i + j * ldr ] * temp;
+            wa1[i] -= r[i + j * ldr] * temp;
         }
     }
 
@@ -138,7 +138,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
 
     // Initialize the iteration counter.
     // Evaluate the function at the origin, and test
-    // for acceptance of the gauss-newton direction.
+    // for acceptance of the Gauss-Newton direction.
 
     int iter = 0;
 

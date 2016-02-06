@@ -87,7 +87,7 @@ def qrfac(a, pivot_flag):
     return (a, ipvt, rdiag, acnorm)
 
 
-def qrsolv(r, const int ldr, const int *ipvt, const diag, qtb, x, sdiag):
+def qrsolv(r, ipvt, diag, qtb, x, sdiag):
 
     assert r.shape[0] == r.shape[1]
     n = r.shape[0]
@@ -192,18 +192,18 @@ def qrsolv(r, const int ldr, const int *ipvt, const diag, qtb, x, sdiag):
         x[l] = wa[j]
 
 
-def lmpar(n, r, ipvt, const double *diag, double *qtb, delta, double par, double x, double sdiag):
+def lmpar(n, r, ipvt, diag, qtb, delta, par, x, sdiag):
 
     assert r.shape[0] == r.shape[1]
     n = r.shape[0]
 
-    const double p1   = 0.1;
-    const double p001 = 0.001;
+    p1   = 0.1
+    p001 = 0.001
 
     # Compute and store in x the Gauss-Newton direction. If the
     # Jacobian is rank-deficient, obtain a least squares solution.
 
-    nsing = n;
+    nsing = n
 
     for j in range(0, n):
 
@@ -368,52 +368,37 @@ def lmpar(n, r, ipvt, const double *diag, double *qtb, delta, double par, double
 
     return par
 
-def lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, const double ftol, const double xtol, const double gtol, const int maxfev,
-           const double epsfcn, double *diag, const int mode, const double factor, const int nprint, int *info, int *nfev,
-           double *fjac, const int ldfjac, int *ipvt, double *qtf, double *wa1, double *wa2, double *wa3, double *wa4:
+def lmdif(fcn, m, n, x, fvec, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor, info, nfev, fjac, ldfjac, qtf):
 
-    const double p1    = 0.1;
-    const double p5    = 0.5;
-    const double p25   = 0.25;
-    const double p75   = 0.75;
-    const double p0001 = 1e-4;
+    p1    = 0.1
+    p5    = 0.5
+    p25   = 0.25
+    p75   = 0.75
+    p0001 = 1e-4
 
-    # Local variables.
-
-    double delta = 0.0; # Initialize to suppress warning.
-    double xnorm = 0.0; # Initialize to suppress warning.
-
-    # Parameter adjustments.
-
-    *info = 0;
-    *nfev = 0;
+    info = 0
+    nfev = 0
 
     iflag = 0
 
+    print("hi")
     # Check the input parameters for errors.
 
     if n <= 0 or m < n or ldfjac < m or ftol < 0.0 or xtol < 0.0 or gtol < 0.0 or maxfev <= 0 or factor <= 0.0:
-        goto L_TERMINATE;
+        return
 
     if mode == 2:
 
-        for (int j = 0; j < n; ++j)
-        {
-            if (diag[j] <= 0.0)
-            {
-                goto L_TERMINATE;
-            }
-        }
+        for j in range(0, n):
+            if diag[j] <= 0.0:
+                return
 
     # Evaluate the function at the starting point
     # and calculate its norm.
 
-    iflag = 1;
-    (*fcn)(m, n, x, fvec, &iflag);
-    *nfev = 1;
-
-    if iflag < 0:
-        goto L_TERMINATE
+    iflag = 1
+    fcn(m, n, x, fvec, 1)
+    nfev = 1
 
     fnorm = enorm(m, fvec)
 
@@ -428,22 +413,8 @@ def lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, 
 
         # Calculate the Jacobian matrix.
 
-        iflag = 2;
-        fdjac2(fcn, m, n, x, fvec, fjac, ldfjac, &iflag, epsfcn, wa4);
-        *nfev += n;
-
-        if iflag < 0:
-            goto L_TERMINATE
-
-        # If requested, call fcn to enable printing of iterates.
-
-        if nprint > 0:
-            iflag = 0
-            if (iter_ - 1) % nprint == 0:
-                (*fcn)(m, n, x, fvec, &iflag)
-
-            if iflag < 0:
-                goto L_TERMINATE
+        fdjac2(fcn, m, n, x, fvec, fjac, ldfjac, 2, epsfcn, wa4)
+        nfev += n
 
         # Compute the QR factorization of the Jacobian.
 
@@ -456,20 +427,16 @@ def lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, 
 
             if mode != 2:
 
-                for (int j = 0; j < n; ++j)
-
+                for j in range(0, n):
                     diag[j] = wa2[j]
-
                     if wa2[j] == 0.0:
                         diag[j] = 1.0
 
             # On the first iteration, calculate the norm of the scaled x
             # and initialize the step bound delta.
 
-            for (int j = 0; j < n; ++j)
-            {
-                wa3[j] = diag[j] * x[j];
-            }
+            for j in range(0, n):
+                wa3[j] = diag[j] * x[j]
 
             xnorm = enorm(n, wa3)
             delta = factor * xnorm
@@ -483,66 +450,54 @@ def lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, 
         for i in range(0, m):
             wa4[i] = fvec[i]
 
-        for (int j = 0; j < n; ++j)
-        {
+        for j in range(0, n):
+
             if fjac[j, j] != 0.0:
-            {
+
                 summ = 0.0
 
-                for (int i = j; i < m; ++i)
-                {
-                    sum += fjac[i + j * ldfjac] * wa4[i];
-                }
+                for i in range(j, m):
 
-                temp = -summ / fjac[j, j];
+                    summ += fjac[i + j * ldfjac] * wa4[i]
 
-                for (int i = j; i < m; ++i)
-                {
+                temp = -summ / fjac[j, j]
+
+                for i in range(j, m):
                     wa4[i] += fjac[i, j] * temp
-                }
-            }
 
-            fjac[j + j * ldfjac] = wa1[j];
-            qtf[j] = wa4[j];
-        }
+            fjac[j, j] = wa1[j]
+            qtf[j] = wa4[j]
 
         # Compute the norm of the scaled gradient.
 
         gnorm = 0.0
 
         if fnorm != 0.0:
+
             for j in range(0, n):
-            {
+
                 l = ipvt[j] - PIVOT_OFFSET
 
                 if wa2[l] != 0.0:
-                {
+
                     summ = 0.0
 
-                    for (int i = 0; i < j + 1; ++i)
-                    {
-                        summ += fjac[i + j * ldfjac] * (qtf[i] / fnorm);
-                    }
+                    for i in range(0, j + 1):
+                        summ += fjac[i, j] * (qtf[i] / fnorm);
+
                     gnorm = max(gnorm, abs(summ / wa2[l]));
-                }
-            }
 
         # Test for convergence of the gradient norm.
 
         if gnorm <= gtol:
-            info = 4
-
-        if info != 0:
-            goto L_TERMINATE
+            return 4
 
         # Rescale if necessary.
 
         if mode != 2:
 
             for j in range(0, n):
-            {
                 diag[j] = max(diag[j], wa2[j])
-            }
 
         while True: # Inner loop.
 
@@ -550,16 +505,14 @@ def lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, 
 
             # Determine the Levenberg-Marquardt parameter.
 
-            lmpar(n, fjac, ldfjac, ipvt, diag, qtf, delta, &par, wa1, wa2, wa3, wa4)
+            lmpar(n, fjac, ldfjac, ipvt, diag, qtf, delta, par)
 
             # Store the direction p and x + p. calculate the norm of p.
 
             for j in range(0, n):
-            {
-                wa1[j] = -wa1[j];
-                wa2[j] = x[j] + wa1[j];
-                wa3[j] = diag[j] * wa1[j];
-            }
+                wa1[j] = -wa1[j]
+                wa2[j] = x[j] + wa1[j]
+                wa3[j] = diag[j] * wa1[j]
 
             pnorm = enorm(n, wa3)
 
@@ -570,14 +523,8 @@ def lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, 
 
             # Evaluate the function at x + p and calculate its norm.
 
-            iflag = 1;
-            (*fcn)(m, n, wa2, wa4, &iflag);
-            ++(*nfev);
-
-            if iflag < 0:
-            {
-                goto L_TERMINATE;
-            }
+            fcn(m, n, wa2, wa4, 1);
+            nfev += 1
 
             fnorm1 = enorm(m, wa4)
 
@@ -591,19 +538,15 @@ def lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, 
             # Compute the scaled predicted reduction and
             # the scaled directional derivative.
 
-            for (int j = 0; j < n; ++j)
-            {
+            for j in range(0, n):
                 wa3[j] = 0.0;
 
-                const int l = ipvt[j] - PIVOT_OFFSET;
+                l = ipvt[j] - PIVOT_OFFSET
 
-                const double temp = wa1[l];
+                temp = wa1[l]
 
-                for (int i = 0; i < j + 1; ++i)
-                {
-                    wa3[i] += fjac[i + j * ldfjac] * temp;
-                }
-            }
+                for i in range(0, j + 1):
+                    wa3[i] += fjac[i + j * ldfjac] * temp
 
             temp1 = enorm(n, wa3) / fnorm
             temp2 = sqrt(par) * pnorm / fnorm
@@ -614,39 +557,29 @@ def lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, 
             # Compute the ratio of the actual to the predicted
             # reduction.
 
-            double ratio = 0.0
+            ratio = 0.0
 
             if prered != 0.0:
                 ratio = actred / prered
 
             # Update the step bound.
 
-            if (ratio <= p25)
-            {
-                double temp;
+            if ratio <= p25:
 
-                if (actred >= 0.0)
-                {
-                    temp = p5;
-                }
+                if actred >= 0.0:
+                    temp = p5
                 else:
-                {
-                    temp = p5 * dirder / (dirder + p5 * actred);
-                }
+                    temp = p5 * dirder / (dirder + p5 * actred)
 
-                if (p1 * fnorm1 >= fnorm or temp < p1)
-                {
-                    temp = p1;
-                }
+                if p1 * fnorm1 >= fnorm or temp < p1:
+                    temp = p1
 
-                delta = temp * fmin(delta, pnorm / p1);
-                par /= temp;
-            }
+                delta = temp * min(delta, pnorm / p1)
+                par /= temp
+
             elif par == 0.0 or ratio >= p75:
-            {
                 delta = pnorm / p5
                 par = p5 * par
-            }
 
             # Test for successful iteration.
 
@@ -654,16 +587,12 @@ def lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, 
 
                 # Successful iteration. Update x, fvec, and their norms.
 
-                for (int j = 0; j < n; ++j)
-                {
-                    x[j] = wa2[j];
-                    wa2[j] = diag[j] * x[j];
-                }
+                for j in range(0, n):
+                    x[j] = wa2[j]
+                    wa2[j] = diag[j] * x[j]
 
-                for (int i = 0; i < m; ++i)
-                {
-                    fvec[i] = wa4[i];
-                }
+                for i in range(0, m):
+                    fvec[i] = wa4[i]
 
                 xnorm = enorm(n, wa2)
                 fnorm = fnorm1
@@ -672,101 +601,82 @@ def lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, 
 
             # Tests for convergence.
 
-            if (abs(actred) <= ftol && prered <= ftol && p5 * ratio <= 1.0)
-            {
-                info = 1
-            }
+            if abs(actred) <= ftol and prered <= ftol and p5 * ratio <= 1.0 and info == 2:
+                return 3
+
+            if abs(actred) <= ftol and prered <= ftol and p5 * ratio <= 1.0:
+                return 1
 
             if delta <= xtol * xnorm:
-                info = 2
-
-            if (abs(actred) <= ftol && prered <= ftol && p5 * ratio <= 1.0 && *info == 2)
-            {
-                info = 3
-            }
-
-            if (*info != 0)
-            {
-                goto L_TERMINATE;
-            }
+                return 2
 
             # Tests for termination and stringent tolerances.
 
-            if (*nfev >= maxfev)
-            {
-                *info = 5;
-            }
-
-            if abs(actred) <= MACHINE_EPSILON && prered <= MACHINE_EPSILON && p5 * ratio <= 1.0:
-                info = 6
+            if gnorm <= MACHINE_EPSILON:
+                return 8
 
             if delta <= MACHINE_EPSILON * xnorm:
-                info = 7
+                return 7
 
-            if (gnorm <= MACHINE_EPSILON)
-            {
-                *info = 8;
-            }
+            if abs(actred) <= MACHINE_EPSILON and prered <= MACHINE_EPSILON and p5 * ratio <= 1.0:
+                return 6
 
-            if info != 0:
-                goto L_TERMINATE;
+            if nfev >= maxfev:
+                return 5
 
             # End of the inner loop. Repeat if iteration unsuccessful.
 
-            if (ratio >= p0001)
-            {
-                break;
-            }
-
+            if ratio >= p0001:
+                break
 
         # End of the outer loop.
 
-L_TERMINATE:
-
-    # Termination, either normal or user imposed.
-
-    if iflag < 0:
-    {
-        info = iflag;
-    }
-
-    iflag = 0
-    if nprint > 0:
-    {
-        f(m, n, x, fvec, iflag)
-    }
-
     return info
 
+def lmdif1(fcn, m, n, x, tol):
 
-np.set_printoptions(precision = 8, linewidth = np.inf, formatter = { 'float': lambda x : "{:12.6f}".format(x)} )
+    if n <= 0 or m < n or tol < 0.0:
+        return (info, x)
 
-m = 3
-n = 7
+    # Call lmdif().
 
-axi = np.expand_dims(1 + np.arange(m), 1).repeat(n, 1)
-axj = np.expand_dims(1 + np.arange(n), 0).repeat(m, 0)
+    maxfev = (n + 1) * 200
+    ftol   = tol
+    xtol   = tol
+    gtol   = 0.0
+    epsfcn = 0.0
+    mode   = 1
+    factor = 100.0
 
-a = 1 / np.sin(10 * axi + axj)
+    (info, x, nfev) = lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, mode, factor)
 
-print("a before qrfac:\n")
-print(a)
-print("\n")
+    if info == 8:
+        info = 4
 
-(a, ipvt, rdiag, acnorm) = qrfac(a, True)
+    return (info, x)
 
-print("a after qrfac:\n")
-print(a)
-print("\n")
+class FitFunc:
+    def __init__(self):
+        pass
+    def __call__(self):
+        assert False
+        pass
 
-print("ipvt after qrfac:\n")
-print(ipvt)
-print("\n")
+def test():
 
-print("rdiag after qrfac:\n")
-print(rdiag)
-print("\n")
+    vf_dtype = [("v", np.float64), ("f", np.float64)]
 
-print("acnorm after qrfac:\n")
-print(acnorm)
-print("\n")
+    vf = np.loadtxt("vf.txt", dtype = vf_dtype)
+
+    x = (20.3, 20.0, 1.0, 1.5, 0.40)
+
+    fcn = FitFunc()
+    tol = 1e-12
+
+    lmdif1(fcn, len(vf), 5, x, tol)
+
+def main():
+    test()
+
+if __name__ == "__main__":
+    main()

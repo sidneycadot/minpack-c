@@ -89,7 +89,7 @@ void lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec,
 
     //   mode is an integer input variable. If mode = 1, the
     //     variables will be scaled internally. If mode = 2,
-    //     the scaling is specified by the input diag. other
+    //     the scaling is specified by the input diag. Other
     //     values of mode are equivalent to mode = 1.
 
     //   factor is a positive input variable used in determining the
@@ -135,7 +135,7 @@ void lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec,
     //               the approximate solution x is possible.
 
     //     info = 8  gtol is too small. fvec is orthogonal to the
-    //               columns of the jacobian to machine precision.
+    //               columns of the Jacobian to machine precision.
 
     //   nfev is an integer output variable set to the number of
     //     calls to fcn.

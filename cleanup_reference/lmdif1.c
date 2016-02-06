@@ -71,7 +71,7 @@ void lmdif1(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec
     //     info = 3  conditions for info = 1 and info = 2 both hold.
 
     //     info = 4  fvec is orthogonal to the columns of the
-    //               jacobian to machine precision.
+    //               Jacobian to machine precision.
 
     //     info = 5  number of calls to fcn has reached or
     //               exceeded 200*(n+1).
@@ -101,29 +101,27 @@ void lmdif1(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec
 
     // Check the input parameters for errors.
 
-    if (n <= 0 || m < n || tol <  0.0 || lwa < m * n + n * 5 + m)
+    if (n > 0 && m >= n && tol >=  0.0 && lwa >= m * n + n * 5 + m)
     {
-        return;
-    }
+        // Call lmdif().
 
-    // Call lmdif().
+        const int    maxfev = (n + 1) * 200;
+        const double ftol   = tol;
+        const double xtol   = tol;
+        const double gtol   = 0.0;
+        const double epsfcn = 0.0;
+        const int    mode   = 1;
+        const double factor = 100.0;
+        const int    nprint = 0;
 
-    const int    maxfev = (n + 1) * 200;
-    const double ftol   = tol;
-    const double xtol   = tol;
-    const double gtol   = 0.0;
-    const double epsfcn = 0.0;
-    const int    mode   = 1;
-    const double factor = 100.0;
-    const int    nprint = 0;
+        int nfev; // Calculated but not used.
 
-    int nfev; // Calculated but not used.
+        lmdif(fcn, m, n, x, fvec, ftol, xtol, gtol, maxfev, epsfcn, wa, mode, factor, nprint, info, &nfev,
+            &wa[m + n * 5], m, iwa, &wa[n], &wa[n * 2], &wa[n * 3], &wa[n * 4], &wa[n * 5]);
 
-    lmdif(fcn, m, n, x, fvec, ftol, xtol, gtol, maxfev, epsfcn, wa, mode, factor, nprint, info, &nfev,
-          &wa[m + n * 5], m, iwa, &wa[n], &wa[n * 2], &wa[n * 3], &wa[n * 4], &wa[n * 5]);
-
-    if (*info == 8)
-    {
-        *info = 4;
+        if (*info == 8)
+        {
+            *info = 4;
+        }
     }
 }

@@ -133,6 +133,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
     for (int j = 0; j < n; ++j)
     {
         const int l = ipvt[j] - PIVOT_OFFSET;
+
         x[l] = wa1[j];
     }
 
@@ -163,6 +164,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
             for (int j = 0; j < n; ++j)
             {
                 const int l = ipvt[j] - PIVOT_OFFSET;
+
                 wa1[j] = diag[l] * (wa2[l] / dxnorm);
             }
 
@@ -195,6 +197,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
             }
 
             const int l = ipvt[j] - PIVOT_OFFSET;
+
             wa1[j] = sum / diag[l];
         }
 
@@ -263,6 +266,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
             for (int j = 0; j < n; ++j)
             {
                 const int l = ipvt[j] - PIVOT_OFFSET;
+
                 wa1[j] = diag[l] * (wa2[l] / dxnorm);
             }
 
@@ -295,7 +299,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
 
             // Compute an improved estimate for par.
 
-            *par = fmax(parl,  *par + parc);
+            *par = fmax(parl, *par + parc);
 
             // End of an iteration.
         }

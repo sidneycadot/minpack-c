@@ -1,3 +1,4 @@
+
 // qrfac.f -- translated by f2c (version 20100827).
 
 #include "minpack_c.h"
@@ -120,7 +121,7 @@ void qrfac(const int m, const int n, double *a, const int lda, const bool pivot,
                 rdiag[kmax] = rdiag[j];
                 wa[kmax] = wa[j];
 
-                int swap = ipvt[j];
+                const int swap = ipvt[j];
                 ipvt[j] = ipvt[kmax];
                 ipvt[kmax] = swap;
             }

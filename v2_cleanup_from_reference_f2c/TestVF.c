@@ -50,21 +50,21 @@ void fcn(const int m, const int n, double *x, double *fvec, int *iflag)
     }
 }
 
-doublereal wa[30000];
-integer lwa = 30000;
+double wa[30000];
+const int lwa = 30000;
 
 int main(void)
 {
-    integer m = 3001; // number of functions (i.e., data points)
-    integer n = 5; // number of parameters;
+    const int m = 3001; // number of functions (i.e., data points)
+    const int n = 5; // number of parameters;
 
     FILE * f = fopen("vf.txt", "r");
+    assert(f != NULL);
 
     for (int i = 0; i < m; ++i)
     {
         int r = fscanf(f, "%lf%lf", &v_arr[i], &f_arr[i]);
         assert(r == 2);
-        //printf("%f %f\n", v_arr[i], f_arr[i]);
     }
     fclose(f);
 
@@ -79,7 +79,7 @@ int main(void)
 
     printf("frequency range: %f .. %f\n", f_min, f_max);
 
-    double x[5]; // parameters: (logFrequencySlackLeft, logFrequencySlackRight, curviness, vOffset, vScale, f_min, f_max);
+    double x[5]; // parameters: (logFrequencySlackLeft, logFrequencySlackRight, curviness, vOffset, vScale)
 
     double fvec[3001];
 

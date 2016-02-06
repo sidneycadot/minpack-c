@@ -9,10 +9,6 @@
 #include <math.h>
 #include <stdbool.h>
 
-typedef bool logical;
-typedef double doublereal;
-typedef int integer;
-
 typedef void (*lmdif_fcn_ptr)(const int m, const int n, double *x, double *fvec, int *iflag);
 
 inline double square(const double x)

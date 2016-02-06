@@ -20,6 +20,7 @@ Directories
 * v3_simplified_api : A version of the C code that omits functionality and adds API improvements (incluing a user function context).
 * v4_python : A version of the solver in Python, aimed at understanding what is going on mathematically.
 * testdata : The codes from v1 onward come with a testcase that executes a fit. This directory contains the corresponding test data.
+* misc : Miscellaneous items.
 
 External links
 --------------

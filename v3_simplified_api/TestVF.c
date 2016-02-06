@@ -66,12 +66,12 @@ int main(void)
     double f_arr[3001];
 
     FILE * f = fopen("vf.txt", "r");
+    assert(f != NULL);
 
     for (int i = 0; i < m; ++i)
     {
         int r = fscanf(f, "%lf%lf", &v_arr[i], &f_arr[i]);
         assert(r == 2);
-        //printf("%f %f\n", v_arr[i], f_arr[i]);
     }
     fclose(f);
 
@@ -93,7 +93,7 @@ int main(void)
     fcn_context.f = f_arr;
     fcn_context.v = v_arr;
 
-    double x[5]; // parameters: (logFrequencySlackLeft, logFrequencySlackRight, curviness, vOffset, vScale, f_min, f_max);
+    double x[5]; // parameters: (logFrequencySlackLeft, logFrequencySlackRight, curviness, vOffset, vScale)
 
     double fvec[3001];
 

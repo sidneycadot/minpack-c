@@ -25,9 +25,7 @@ Directories
 External links
 --------------
 
-https://en.wikipedia.org/wiki/MINPACK
-
-http://www.netlib.org/minpack/
-
-http://www.mcs.anl.gov/~more/ANL8074a.pdf
-http://www.mcs.anl.gov/~more/ANL8074b.pdf
+* https://en.wikipedia.org/wiki/MINPACK
+* http://www.netlib.org/minpack/
+* http://www.mcs.anl.gov/~more/ANL8074a.pdf
+* http://www.mcs.anl.gov/~more/ANL8074b.pdf

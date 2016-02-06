@@ -17,7 +17,7 @@ Directories
 * v0_original_fortran : Contains the original Fortran-66 code as downloaded from the Netlib website.
 * v1_reference_f2c : An automated translation of the Fortran code to C, (using "f2c"). Includes minimal changes to get it to run independently of libf2c.
 * v2_cleanup_from_reference_f2c : A cleaned-up, but functionally identical, version of the reference_f2c version.
-* v3_simplified_api : A version of the C code that omits functionality and adds API improvements (incluing a user function context).
+* v3_simplified_api : A version of the C code that omits obscure functionality (such as printing during evaluation) and adds API improvements, including enum types and a user function context parameter.
 * v4_python : A version of the solver in Python, aimed at understanding what is going on mathematically.
 * testdata : The codes from v1 onward come with a testcase that executes a fit. This directory contains the corresponding test data.
 * misc : Miscellaneous items.

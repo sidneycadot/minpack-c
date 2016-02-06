@@ -23,4 +23,5 @@ fdjac2.o : fdjac2.c minpack_c.h
 test_qrfac.o : test_qrfac.c
 
 clean :
-	$(RM) *.o TestVF
+	$(RM) *.o TestVF test_qrfac
+

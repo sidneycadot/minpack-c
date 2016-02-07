@@ -49,7 +49,7 @@ double enorm(const int n, const double *x)
     {
         const double xabs = fabs(x[i]);
 
-        if (xabs <= rdwarf)
+        if (xabs >= agiant)
         {
             // Sum for large components.
 
@@ -63,7 +63,7 @@ double enorm(const int n, const double *x)
                 s1 += square(xabs / x1max);
             }
         }
-        else if (xabs >= agiant)
+        else if (xabs <= rdwarf)
         {
             // Sum for small components.
 

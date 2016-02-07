@@ -4,7 +4,6 @@ import sys
 import numpy as np
 
 MACHINE_EPSILON = 2.22044604926e-16
-PIVOT_OFFSET = 0
 
 def square(x):
     return x * x
@@ -23,7 +22,7 @@ def qrfac(a, pivot_flag):
     wa     = rdiag.copy()
 
     if pivot_flag:
-        ipvt = np.arange(n) + PIVOT_OFFSET
+        ipvt = np.arange(n)
     else:
         ipvt = None
 
@@ -46,16 +45,12 @@ def qrfac(a, pivot_flag):
             if kmax != j:
 
                 for i in range(0, m):
-                    swap = a[i, j]
-                    a[i, j] = a[i, kmax]
-                    a[i, kmax] = swap
+                    (a[i, j], a[i, kmax]) = (a[i, kmax], a[i, j])
 
                 rdiag[kmax] = rdiag[j]
                 wa[kmax] = wa[j]
 
-                swap = ipvt[j]
-                ipvt[j] = ipvt[kmax]
-                ipvt[kmax] = swap
+                (ipvt[j], ipvt[kmax]) = (ipvt[kmax], ipvt[j])
 
         # Compute the Householder transformation to reduce the
         # j-th column of a to a multiple of the j-th unit vector.
@@ -81,9 +76,9 @@ def qrfac(a, pivot_flag):
 
                 if pivot_flag and rdiag[k] != 0.0:
 
-                    rdiag[k] *= np.sqrt(max(0.0, 1.0 - (a[j, k] / rdiag[k]) ** 2))
+                    rdiag[k] *= np.sqrt(max(0.0, 1.0 - square(a[j, k] / rdiag[k])))
 
-                    if 0.05 * (rdiag[k] / wa[k]) ** 2 <= MACHINE_EPSILON:
+                    if 0.05 * square(rdiag[k] / wa[k]) <= MACHINE_EPSILON:
                         wa[k] = rdiag[k] = np.linalg.norm(a[j + 1:, k])
 
         rdiag[j] = -ajnorm
@@ -101,7 +96,6 @@ def qrsolv(r, ipvt, diag, qtb):
     sdiag = np.zeros(n)
 
     for j in range(0, n):
-
         for i in range(j, n):
             r[i, j] = r[j, i]
 
@@ -116,14 +110,12 @@ def qrsolv(r, ipvt, diag, qtb):
         # Prepare the row of d to be eliminated, locating the
         # diagonal element using p from the QR factorization.
 
-        l = ipvt[j] - PIVOT_OFFSET
+        l = ipvt[j]
 
         if diag[l] != 0.0:
 
-            for k in range(j, n):
-                sdiag[k] = 0.0
-
             sdiag[j] = diag[l]
+            sdiag[j + 1:] = 0.0
 
             # The transformations to eliminate the row of d
             # modify only a single element of (q transpose)*b
@@ -187,17 +179,14 @@ def qrsolv(r, ipvt, diag, qtb):
 
         j = nsing - k
 
-        summ = 0.0
-
-        for i in range(j + 1, nsing):
-            summ += r[i, j] * wa[i]
+        summ = np.dot(r[j + 1:nsing, j], wa[j + 1:nsing])
 
         wa[j] = (wa[j] - summ) / sdiag[j]
 
     # Permute the components of z back to components of x.
 
     for j in range(0, n):
-        l = ipvt[j] - PIVOT_OFFSET
+        l = ipvt[j]
         x[l] = wa[j]
 
     return (r, x, sdiag)
@@ -207,7 +196,6 @@ def lmpar(r, ipvt, diag, qtb, delta, par):
     (m, n) = r.shape
 
     wa1 = np.full(n, np.nan)
-    wa2 = np.full(n, np.nan)
 
     x     = np.full(n, np.nan)
     sdiag = np.full(n, np.nan)
@@ -240,15 +228,12 @@ def lmpar(r, ipvt, diag, qtb, delta, par):
 
         wa1[j] /= r[j, j]
 
-        temp = wa1[j]
-
-        for i in range(0, j):
-            wa1[i] -= r[i, j] * temp
+        wa1[:j] -= r[:j, j] * wa1[j]
 
     print("wa1 after", wa1)
 
     for j in range(0, n):
-        l = ipvt[j] - PIVOT_OFFSET
+        l = ipvt[j]
         x[l] = wa1[j]
 
     # Initialize the iteration counter.
@@ -257,18 +242,10 @@ def lmpar(r, ipvt, diag, qtb, delta, par):
 
     iter_ = 0
 
-    for j in range(0, n):
-        wa2[j] = diag[j] * x[j]
-
-    print("diag", diag)
-    print("x", x)
-    print("wa2", wa2)
+    wa2 = diag * x
 
     dxnorm = np.linalg.norm(wa2)
     fp = dxnorm - delta
-
-    print("lmpar: dxnorm =", dxnorm)
-    print("lmpar: fp =", fp)
 
     if fp > p1 * delta:
 
@@ -281,14 +258,12 @@ def lmpar(r, ipvt, diag, qtb, delta, par):
         if nsing >= n:
 
             for j in range(0, n):
-                l = ipvt[j] - PIVOT_OFFSET
+                l = ipvt[j]
                 wa1[j] = diag[l] * (wa2[l] / dxnorm)
 
             for j in range(0, n):
 
-                summ = 0.0
-                for i in range(0, j):
-                    summ += r[i, j] * wa1[i]
+                summ = np.dot(r[:j, j], wa1[:j])
 
                 wa1[j] = (wa1[j] - summ) / r[j, j]
 
@@ -300,13 +275,9 @@ def lmpar(r, ipvt, diag, qtb, delta, par):
 
         for j in range(0, n):
 
-            summ = 0.0
+            l = ipvt[j]
 
-            for i in range(0, j + 1):
-                summ += r[i, j] * qtb[i]
-
-            l = ipvt[j] - PIVOT_OFFSET
-
+            summ = np.dot(r[j + 1:, j], qtb[j + 1:])
             wa1[j] = summ / diag[l]
 
         gnorm = np.linalg.norm(wa1)
@@ -336,15 +307,11 @@ def lmpar(r, ipvt, diag, qtb, delta, par):
             if par == 0.0:
                 par = max(MACHINE_MINPOS, p001 * paru)
 
-            temp = np.sqrt(par)
-
-            for j in range(0, n):
-                wa1[j] = temp * diag[j]
+            wa1 = np.sqrt(par) * diag
 
             (r, x, sdiag) = qrsolv(r, ipvt, wa1, qtb)
 
-            for j in range(0, n):
-                wa2[j] = diag[j] * x[j]
+            wa2 = diag * x
 
             dxnorm = np.linalg.norm(wa2)
 
@@ -361,17 +328,12 @@ def lmpar(r, ipvt, diag, qtb, delta, par):
             # Compute the Newton correction.
 
             for j in range(0, n):
-                l = ipvt[j] - PIVOT_OFFSET
+                l = ipvt[j]
                 wa1[j] = diag[l] * (wa2[l] / dxnorm)
 
             for j in range(0, n):
-
                 wa1[j] /= sdiag[j]
-
-                temp = wa1[j]
-
-                for i in range(j + 1, n):
-                    wa1[i] -= r[i, j] * temp
+                wa1[j+1:n] -= r[j+1:n, j] * wa1[j]
 
             temp = np.linalg.norm(wa1)
 
@@ -469,43 +431,11 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
         # Calculate the Jacobian matrix.
 
         fjac = fdjac2(fcn, x, fvec, epsfcn)
-
-        if False:
-
-            print("*** fjac ***")
-            print()
-            print(fjac)
-            print()
-
         nfev += n
 
         # Compute the QR factorization of the Jacobian.
 
         (fjac, ipvt, rdiag, acnorm) = qrfac(fjac, True)
-
-        if False:
-
-            print("*** after qrfac() ***")
-
-            print("---> fjac")
-            print()
-            print(fjac)
-            print()
-
-            print("---> ipvt")
-            print()
-            print(ipvt)
-            print()
-
-            print("---> rdiag")
-            print()
-            print(rdiag)
-            print()
-
-            print("---> acnorm")
-            print()
-            print(acnorm)
-            print()
 
         # On the first iteration and if mode is 1, scale according
         # to the norms of the columns of the initial Jacobian.
@@ -514,12 +444,8 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
 
             if mode != 2:
 
-                diag = np.empty(n)
-
-                for j in range(0, n):
-                    diag[j] = acnorm[j]
-                    if acnorm[j] == 0.0:
-                        diag[j] = 1.0
+                diag = acnorm.copy()
+                diag[diag == 0.0] = 1.0
 
             # On the first iteration, calculate the norm of the scaled x
             # and initialize the step bound delta.
@@ -530,46 +456,22 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
             if delta == 0.0:
                 delta = factor
 
-        if True:
-            print("diag", diag)
-            print("xnorm", xnorm)
-            print("delta", delta)
-
         # Form (q transpose)*fvec and store the first n components in
         # qtf.
 
-        wa4 = fvec.copy()
-
-        qtf = np.empty(n)
+        qtf = fvec.copy()
 
         for j in range(0, n):
 
             if fjac[j, j] != 0.0:
 
-                summ = 0.0
-
-                for i in range(j, m):
-
-                    summ += fjac[i, j] * wa4[i]
+                summ = np.dot(fjac[j:, j], qtf[j:])
 
                 temp = -summ / fjac[j, j]
 
-                for i in range(j, m):
-                    wa4[i] += fjac[i, j] * temp
+                qtf[j:] += fjac[j:, j] * temp
 
             fjac[j, j] = rdiag[j]
-
-            qtf[j] = wa4[j]
-
-        if False:
-            print("HELLO")
-            print("fjac")
-            print()
-            print(fjac)
-            print()
-            print("qtf")
-            print(qtf)
-            print()
 
         # Compute the norm of the scaled gradient.
 
@@ -579,18 +481,13 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
 
             for j in range(0, n):
 
-                l = ipvt[j] - PIVOT_OFFSET
+                l = ipvt[j]
 
                 if acnorm[l] != 0.0:
 
-                    summ = 0.0
-
-                    for i in range(0, j + 1):
-                        summ += fjac[i, j] * (qtf[i] / fnorm)
+                    summ = np.dot(fjac[:j+1, j], qtf[:j+1]) / fnorm
 
                     gnorm = max(gnorm, abs(summ / acnorm[l]))
-
-        print ("gnorm:", gnorm)
 
         # Test for convergence of the gradient norm.
 
@@ -649,14 +546,10 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
             # the scaled directional derivative.
 
             for j in range(0, n):
+                l = ipvt[j]
+
                 wa3[j] = 0.0
-
-                l = ipvt[j] - PIVOT_OFFSET
-
-                temp = wa1[l]
-
-                for i in range(0, j + 1):
-                    wa3[i] += fjac[i, j] * temp
+                wa3[:j+1] += fjac[:j+1, j] * wa1[l]
 
             temp1 = np.linalg.norm(wa3) / fnorm
             temp2 = np.sqrt(par) * pnorm / fnorm
@@ -701,12 +594,10 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
 
                 # Successful iteration. Update x, fvec, and their norms.
 
-                for j in range(0, n):
-                    x[j] = wa2[j]
-                    wa2[j] = diag[j] * x[j]
+                x = wa2.copy()
+                wa2 *= diag
 
-                for i in range(0, m):
-                    fvec[i] = wa4[i]
+                fvec = wa4.copy()
 
                 xnorm = np.linalg.norm(wa2)
                 fnorm = fnorm1

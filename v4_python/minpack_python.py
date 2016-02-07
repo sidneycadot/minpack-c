@@ -6,6 +6,9 @@ import numpy as np
 MACHINE_EPSILON = 2.22044604926e-16
 PIVOT_OFFSET = 0
 
+def square(x):
+    return x * x
+
 def qrfac(a, pivot_flag):
 
     a = a.copy()
@@ -88,10 +91,14 @@ def qrfac(a, pivot_flag):
     return (a, ipvt, rdiag, acnorm)
 
 
-def qrsolv(r, ipvt, diag, qtb, x, sdiag):
+def qrsolv(r, ipvt, diag, qtb):
 
-    assert r.shape[0] == r.shape[1]
-    n = r.shape[0]
+    r = r.copy()
+
+    (m, n) = r.shape
+
+    x = np.zeros(n)
+    sdiag = np.zeros(n)
 
     for j in range(0, n):
 
@@ -99,7 +106,8 @@ def qrsolv(r, ipvt, diag, qtb, x, sdiag):
             r[i, j] = r[j, i]
 
         x[j] = r[j, j]
-        wa[j] = qtb[j]
+
+    wa = qtb.copy()
 
     # Eliminate the diagonal matrix d using a Givens rotation.
 
@@ -132,11 +140,11 @@ def qrsolv(r, ipvt, diag, qtb, x, sdiag):
 
                     if abs(r[k, k]) < abs(sdiag[k]):
                         cot_ = r[k, k] / sdiag[k]
-                        sin_ = 1.0 / sqrt(1.0 + cot_ ** 2)
+                        sin_ = 1.0 / np.sqrt(1.0 + cot_ ** 2)
                         cos_ = sin_ * cot_
                     else:
                         tan_ = sdiag[k] / r[k, k]
-                        cos_ = 1.0 / sqrt(1.0 + tan_ ** 2)
+                        cos_ = 1.0 / np.sqrt(1.0 + tan_ ** 2)
                         sin_ = cos_ * tan_
 
                     # Compute the modified diagonal element of r and
@@ -192,6 +200,7 @@ def qrsolv(r, ipvt, diag, qtb, x, sdiag):
         l = ipvt[j] - PIVOT_OFFSET
         x[l] = wa[j]
 
+    return (r, x, sdiag)
 
 def lmpar(r, ipvt, diag, qtb, delta, par):
 
@@ -261,11 +270,7 @@ def lmpar(r, ipvt, diag, qtb, delta, par):
     print("lmpar: dxnorm =", dxnorm)
     print("lmpar: fp =", fp)
 
-    sys.exit(1)
-
     if fp > p1 * delta:
-
-        assert False
 
         # If the Jacobian is not rank deficient, the Newton
         # step provides a lower bound, parl, for the zero of
@@ -287,7 +292,7 @@ def lmpar(r, ipvt, diag, qtb, delta, par):
 
                 wa1[j] = (wa1[j] - summ) / r[j, j]
 
-            temp = enorm(n, wa1)
+            temp = np.linalg.norm(wa1)
 
             parl = fp / delta / temp / temp
 
@@ -304,7 +309,7 @@ def lmpar(r, ipvt, diag, qtb, delta, par):
 
             wa1[j] = summ / diag[l]
 
-        gnorm = enorm(n, wa1)
+        gnorm = np.linalg.norm(wa1)
 
         paru = gnorm / delta
 
@@ -331,17 +336,18 @@ def lmpar(r, ipvt, diag, qtb, delta, par):
             if par == 0.0:
                 par = max(MACHINE_MINPOS, p001 * paru)
 
-            temp = sqrt(par)
+            temp = np.sqrt(par)
 
             for j in range(0, n):
                 wa1[j] = temp * diag[j]
 
-            qrsolv(n, r, ldr, ipvt, wa1, qtb, x, sdiag, wa2)
+            (r, x, sdiag) = qrsolv(r, ipvt, wa1, qtb)
 
             for j in range(0, n):
                 wa2[j] = diag[j] * x[j]
 
-            dxnorm = enorm(n, wa2)
+            dxnorm = np.linalg.norm(wa2)
+
             temp = fp
             fp = dxnorm - delta
 
@@ -367,7 +373,7 @@ def lmpar(r, ipvt, diag, qtb, delta, par):
                 for i in range(j + 1, n):
                     wa1[i] -= r[i, j] * temp
 
-            temp = enorm(n, wa1)
+            temp = np.linalg.norm(wa1)
 
             parc = fp / delta / temp / temp
 
@@ -556,7 +562,7 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
             qtf[j] = wa4[j]
 
         if False:
-            print("&&&&&&&&&&&&&&&&&&&&&&&&&")
+            print("HELLO")
             print("fjac")
             print()
             print(fjac)
@@ -604,18 +610,18 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
 
             # Determine the Levenberg-Marquardt parameter.
 
-            par = lmpar(fjac, ipvt, diag, qtf, delta, par)
-
-            assert False
+            (par, wa1, wa2) = lmpar(fjac, ipvt, diag, qtf, delta, par)
 
             # Store the direction p and x + p. calculate the norm of p.
 
-            for j in range(0, n):
-                wa1[j] = -wa1[j]
-                wa2[j] = x[j] + wa1[j]
-                wa3[j] = diag[j] * wa1[j]
+            wa1 = -wa1
+            wa2 = x + wa1
 
-            pnorm = enorm(n, wa3)
+            wa3 = diag * wa1
+
+            pnorm = np.linalg.norm(wa3)
+
+            print(pnorm)
 
             # On the first iteration, adjust the initial step bound.
 
@@ -624,10 +630,13 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
 
             # Evaluate the function at x + p and calculate its norm.
 
-            fcn(m, n, wa2, wa4, 1);
+            wa4 = fcn(wa2)
+
             nfev += 1
 
-            fnorm1 = enorm(m, wa4)
+            fnorm1 = np.linalg.norm(wa4)
+
+            print("fnorm1", fnorm1)
 
             # Compute the scaled actual reduction.
 
@@ -647,13 +656,15 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
                 temp = wa1[l]
 
                 for i in range(0, j + 1):
-                    wa3[i] += fjac[i + j * ldfjac] * temp
+                    wa3[i] += fjac[i, j] * temp
 
-            temp1 = enorm(n, wa3) / fnorm
-            temp2 = sqrt(par) * pnorm / fnorm
+            temp1 = np.linalg.norm(wa3) / fnorm
+            temp2 = np.sqrt(par) * pnorm / fnorm
 
             prered = square(temp1) + 2 * square(temp2)
             dirder = -(square(temp1) + square(temp2))
+
+            print("prered, dirder", prered, dirder)
 
             # Compute the ratio of the actual to the predicted
             # reduction.
@@ -664,6 +675,8 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
                 ratio = actred / prered
 
             # Update the step bound.
+
+            print("RATIO:", ratio)
 
             if ratio <= p25:
 
@@ -695,7 +708,7 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
                 for i in range(0, m):
                     fvec[i] = wa4[i]
 
-                xnorm = enorm(n, wa2)
+                xnorm = np.linalg.norm(wa2)
                 fnorm = fnorm1
 
                 iter_ += 1
@@ -703,27 +716,27 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
             # Tests for convergence.
 
             if abs(actred) <= ftol and prered <= ftol and p5 * ratio <= 1.0 and info == 2:
-                return 3
+                return (3, x, nfev)
 
             if abs(actred) <= ftol and prered <= ftol and p5 * ratio <= 1.0:
-                return 1
+                return (1, x, nfev)
 
             if delta <= xtol * xnorm:
-                return 2
+                return (2, x, nfev)
 
             # Tests for termination and stringent tolerances.
 
             if gnorm <= MACHINE_EPSILON:
-                return 8
+                return (8, x, nfev)
 
             if delta <= MACHINE_EPSILON * xnorm:
-                return 7
+                return (7, x, nfev)
 
             if abs(actred) <= MACHINE_EPSILON and prered <= MACHINE_EPSILON and p5 * ratio <= 1.0:
-                return 6
+                return (6, x, nfev)
 
             if nfev >= maxfev:
-                return 5
+                return (5, x, nfev)
 
             # End of the inner loop. Repeat if iteration unsuccessful.
 
@@ -732,7 +745,7 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
 
         # End of the outer loop.
 
-    return info
+    return (info, x, nfev)
 
 def lmdif1(fcn, m, n, x, tol):
 
@@ -755,7 +768,7 @@ def lmdif1(fcn, m, n, x, tol):
     if info == 8:
         info = 4
 
-    return (info, x)
+    return (info, x, nfev)
 
 class FitFunc:
     def __init__(self, vf):
@@ -806,10 +819,16 @@ def test():
 
     tol = 1e-12
 
-    lmdif1(fcn, len(vf), 5, x, tol)
+    (info, x, nfev) = lmdif1(fcn, len(vf), 5, x, tol)
+
+    print()
+    print()
+    print("info:", info)
+    print("x", x)
+    print("nfev", nfev)
 
 def main():
-    np.set_printoptions(linewidth = np.inf, precision = 12)
+    np.set_printoptions(linewidth = np.inf, precision = 20)
     test()
 
 if __name__ == "__main__":

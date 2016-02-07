@@ -1,9 +1,10 @@
 #! /usr/bin/env python3
 
+import sys
 import numpy as np
 
 MACHINE_EPSILON = 2.22044604926e-16
-PIVOT_OFFSET = 1
+PIVOT_OFFSET = 0
 
 def qrfac(a, pivot_flag):
 
@@ -192,10 +193,15 @@ def qrsolv(r, ipvt, diag, qtb, x, sdiag):
         x[l] = wa[j]
 
 
-def lmpar(n, r, ipvt, diag, qtb, delta, par, x, sdiag):
+def lmpar(r, ipvt, diag, qtb, delta, par):
 
-    assert r.shape[0] == r.shape[1]
-    n = r.shape[0]
+    (m, n) = r.shape
+
+    wa1 = np.full(n, np.nan)
+    wa2 = np.full(n, np.nan)
+
+    x     = np.full(n, np.nan)
+    sdiag = np.full(n, np.nan)
 
     p1   = 0.1
     p001 = 0.001
@@ -213,9 +219,13 @@ def lmpar(n, r, ipvt, diag, qtb, delta, par, x, sdiag):
             nsing = j
 
         if nsing < n:
-            wa1[j] = 0
+            wa1[j] = 0.0
 
-    for k in range(1, nsing):
+    print("lmpar: nsing =", n)
+
+    print("wa1 before", wa1)
+
+    for k in range(1, nsing + 1):
 
         j = nsing - k
 
@@ -226,9 +236,11 @@ def lmpar(n, r, ipvt, diag, qtb, delta, par, x, sdiag):
         for i in range(0, j):
             wa1[i] -= r[i, j] * temp
 
-        for j in range(0, n):
-            l = ipvt[j] - PIVOT_OFFSET
-            x[l] = wa1[j]
+    print("wa1 after", wa1)
+
+    for j in range(0, n):
+        l = ipvt[j] - PIVOT_OFFSET
+        x[l] = wa1[j]
 
     # Initialize the iteration counter.
     # Evaluate the function at the origin, and test
@@ -239,10 +251,21 @@ def lmpar(n, r, ipvt, diag, qtb, delta, par, x, sdiag):
     for j in range(0, n):
         wa2[j] = diag[j] * x[j]
 
-    dxnorm = enorm(n, wa2)
+    print("diag", diag)
+    print("x", x)
+    print("wa2", wa2)
+
+    dxnorm = np.linalg.norm(wa2)
     fp = dxnorm - delta
 
+    print("lmpar: dxnorm =", dxnorm)
+    print("lmpar: fp =", fp)
+
+    sys.exit(1)
+
     if fp > p1 * delta:
+
+        assert False
 
         # If the Jacobian is not rank deficient, the Newton
         # step provides a lower bound, parl, for the zero of
@@ -363,10 +386,10 @@ def lmpar(n, r, ipvt, diag, qtb, delta, par, x, sdiag):
 
     # Termination.
 
-    if iter == 0:
+    if iter_ == 0:
         par = 0.0
 
-    return par
+    return (par, x, sdiag)
 
 def fdjac2(fcn, x, fvec, epsfcn):
 
@@ -413,7 +436,7 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
         return
 
     if mode == 2:
-
+        # only check values of 'diag' array if it was pre-supplied.
         for j in range(0, n):
             if diag[j] <= 0.0:
                 return
@@ -425,6 +448,8 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
     nfev = 1
 
     fnorm = np.linalg.norm(fvec)
+
+    print("fnorm right after eval: {:.20f}".format(fnorm))
 
     # Initialize Levenberg-Marquardt parameter and iteration counter.
 
@@ -439,11 +464,42 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
 
         fjac = fdjac2(fcn, x, fvec, epsfcn)
 
+        if False:
+
+            print("*** fjac ***")
+            print()
+            print(fjac)
+            print()
+
         nfev += n
 
         # Compute the QR factorization of the Jacobian.
 
-        (x, ipvt, rdiag, acnorm) = qrfac(fjac, True)
+        (fjac, ipvt, rdiag, acnorm) = qrfac(fjac, True)
+
+        if False:
+
+            print("*** after qrfac() ***")
+
+            print("---> fjac")
+            print()
+            print(fjac)
+            print()
+
+            print("---> ipvt")
+            print()
+            print(ipvt)
+            print()
+
+            print("---> rdiag")
+            print()
+            print(rdiag)
+            print()
+
+            print("---> acnorm")
+            print()
+            print(acnorm)
+            print()
 
         # On the first iteration and if mode is 1, scale according
         # to the norms of the columns of the initial Jacobian.
@@ -467,6 +523,11 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
 
             if delta == 0.0:
                 delta = factor
+
+        if True:
+            print("diag", diag)
+            print("xnorm", xnorm)
+            print("delta", delta)
 
         # Form (q transpose)*fvec and store the first n components in
         # qtf.
@@ -494,6 +555,16 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
 
             qtf[j] = wa4[j]
 
+        if False:
+            print("&&&&&&&&&&&&&&&&&&&&&&&&&")
+            print("fjac")
+            print()
+            print(fjac)
+            print()
+            print("qtf")
+            print(qtf)
+            print()
+
         # Compute the norm of the scaled gradient.
 
         gnorm = 0.0
@@ -513,6 +584,8 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
 
                     gnorm = max(gnorm, abs(summ / acnorm[l]))
 
+        print ("gnorm:", gnorm)
+
         # Test for convergence of the gradient norm.
 
         if gnorm <= gtol:
@@ -531,8 +604,9 @@ def lmdif(fcn, m, n, x, ftol, xtol, gtol, maxfev, epsfcn, diag, mode, factor):
 
             # Determine the Levenberg-Marquardt parameter.
 
-            # *** WE ARE HERE ***
-            lmpar(n, fjac, ldfjac, ipvt, diag, qtf, delta, par)
+            par = lmpar(fjac, ipvt, diag, qtf, delta, par)
+
+            assert False
 
             # Store the direction p and x + p. calculate the norm of p.
 
@@ -691,7 +765,9 @@ class FitFunc:
         self.f_max = max(self.f)
 
     def __call__(self, x):
-        print("fcn:", x)
+
+        print("fcn: x = ", x)
+
         logFrequencySlackLeft  = x[0]
         logFrequencySlackRight = x[1]
         curviness              = x[2]
@@ -707,7 +783,12 @@ class FitFunc:
         y  = np.tan((np.pi / 2) * xx)
         vModel = vOffset + vScale * y
 
-        return (vModel - self.v)
+        residuals = vModel - self.v
+
+        #print("fcn residuals:", residuals)
+        #print()
+
+        return residuals
 
 def test():
 
@@ -715,15 +796,20 @@ def test():
 
     vf = np.loadtxt("vf.txt", dtype = vf_dtype)
 
+    selection = (np.abs(vf["v"] % 0.500) < 1e-10)
+
+    vf = vf[selection]
+
     fcn = FitFunc(vf)
 
-    x = np.array([20.3, 20.0, 1.0, 1.5, 0.40])
+    x = np.array([20.0, 20.0, 0.0, 1.5, 0.40])
 
     tol = 1e-12
 
     lmdif1(fcn, len(vf), 5, x, tol)
 
 def main():
+    np.set_printoptions(linewidth = np.inf, precision = 12)
     test()
 
 if __name__ == "__main__":

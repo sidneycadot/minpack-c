@@ -58,14 +58,16 @@ void fcn(const int m, const int n, double *x, double *fvec, const enum lm_iflag_
     }
 }
 
-double wa[30000];
-const int lwa = 30000;
+double wa[9100];
+const int lwa = 9100;
+
+const double GUARD_VALUE = 123456.0;
 
 int main(void)
 {
     const int n = 5; // number of parameters
 
-    for (int m = 5; m <= VF_TABLE_SIZE; ++m)
+    for (int m = 5; m <= 1501; ++m)
     {
         if ((VF_TABLE_SIZE - 1) % (m - 1))
         {
@@ -107,6 +109,11 @@ int main(void)
 
         double best_duration = INFINITY;
 
+        for (int z = 0; z < lwa; ++z)
+        {
+            wa[z] = GUARD_VALUE;
+        }
+
         for (int rep = 0; rep < num_repeats; ++rep)
         {
             x[0] = 20.3;
@@ -115,9 +122,9 @@ int main(void)
             x[3] = 1.5;
             x[4] = 0.40;
 
-            const clock_t t1 = clock();
-
             context.nfev = 0;
+
+            const clock_t t1 = clock();
 
             enum lm_info_t info = lmdif1(fcn, &context, m, n, x, fvec, tol, iwa, wa, lwa);
 
@@ -125,15 +132,11 @@ int main(void)
 
             const double duration = (double)(t2 - t1) / CLOCKS_PER_SEC;
 
-            printf("    duration = %f seconds (nfev = %d)\n", duration, context.nfev);
-
-            best_duration = fmin(best_duration, duration);
-
             if (rep == 0)
             {
-                printf("    return value of solver: %d\n", info);
+                printf("    [%d] return value of solver: %d\n", m, info);
 
-                printf("    solution = {");
+                printf("    [%d] solution = {", m);
                 for (int i = 0; i < n; ++i)
                 {
                     if (i != 0)
@@ -144,8 +147,24 @@ int main(void)
                 }
                 printf("}\n");
             }
+
+            printf("    [%d/%d] duration = %f seconds (nfev = %d)\n", m, rep + 1, duration, context.nfev);
+
+            best_duration = fmin(best_duration, duration);
+
         }
-        printf("    best duration = %f seconds\n\n", best_duration);
+
+        printf("    [%d] best duration = %f seconds\n", m, best_duration);
+
+        for (int z = 0; z < lwa; ++z)
+        {
+            if (wa[z] == GUARD_VALUE)
+            {
+                printf("    [%d] number of entries used in 'wa' array: %d\n\n", m, z);
+                break;
+            }
+        }
+
 
     } // m loop
 

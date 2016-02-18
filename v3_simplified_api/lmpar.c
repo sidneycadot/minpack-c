@@ -170,7 +170,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
             {
                 double sum = 0.0;
 
-                for (int i = 0; i < j - 1; ++i)
+                for (int i = 0; i < j; ++i)
                 {
                     sum += r[i + j * ldr] * wa1[i];
                 }

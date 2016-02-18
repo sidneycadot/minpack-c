@@ -106,7 +106,7 @@ int main(void)
             {
                 printf(", ");
             }
-            printf("%f", x[i]);
+            printf("%.20g", x[i]);
         }
         printf("}\n");
     }

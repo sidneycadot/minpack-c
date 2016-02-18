@@ -1,5 +1,5 @@
 
-// qrsolv.f
+// qrsolv.f -- translated by f2c (version 20100827).
 
 #include "minpack_c.h"
 
@@ -173,6 +173,7 @@ void qrsolv(const int n, double *r, const int ldr, const int *ipvt, const double
         {
             nsing = j;
         }
+
         if (nsing < n)
         {
             wa[j] = 0.0;

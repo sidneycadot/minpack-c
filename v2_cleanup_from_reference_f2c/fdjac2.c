@@ -1,5 +1,5 @@
 
-// fdjac2.f
+// fdjac2.f -- translated by f2c (version 20100827).
 
 #include "minpack_c.h"
 

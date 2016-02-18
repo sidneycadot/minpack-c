@@ -3,8 +3,7 @@
 
 #include "minpack_c.h"
 
-void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double *diag, double *qtb, const double delta,
-           double *par, double *x, double *sdiag, double *wa1,  double *wa2)
+void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double *diag, double *qtb, const double delta, double *par, double *x, double *sdiag, double *wa1, double *wa2)
 {
     // Given an m by n matrix a, an n by n nonsingular diagonal
     // matrix d, an m-vector b, and a positive number delta,
@@ -71,7 +70,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
     //     n elements of the vector (q transpose)*b.
 
     //   delta is a positive input variable which specifies an upper
-    //     bound on the euclidean norm of d*x.
+    //     bound on the Euclidean norm of d*x.
 
     //   par is a nonnegative variable. On input par contains an
     //     initial estimate of the Levenberg-Marquardt parameter.
@@ -112,7 +111,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
 
         if (nsing < n)
         {
-            wa1[j] = 0;
+            wa1[j] = 0.0;
         }
     }
 
@@ -171,7 +170,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
             {
                 double sum = 0.0;
 
-                for (int i = 0; i < j; ++i)
+                for (int i = 0; i < j - 1; ++i)
                 {
                     sum += r[i + j * ldr] * wa1[i];
                 }
@@ -271,9 +270,7 @@ void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double 
 
             for (int j = 0; j < n; ++j)
             {
-                wa1[j] /= sdiag[j];
-
-                const double temp = wa1[j];
+                const double temp = wa1[j] /= sdiag[j];
 
                 for (int i = j + 1; i < n; ++i)
                 {

@@ -25,7 +25,7 @@ double enorm(const int n, const double *x);
 void fdjac2(lmdif_fcn_ptr fcn, const int m, const int n, double *x, const double *fvec, double *fjac, const int ldfjac, int *iflag, const double epsfcn, double *wa);
 void qrfac(const int m, const int n, double *a, const int lda, const bool pivot, int *ipvt, const int lipvt, double *rdiag, double *acnorm, double *wa);
 void qrsolv(const int n, double *r, const int ldr, const int *ipvt, const double *diag, const double *qtb, double *x, double *sdiag, double *wa);
-void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double *diag, double *qtb, const double delta, double *par, double *x, double *sdiag, double *wa1, double *wa2);
+void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double *diag, const double *qtb, const double delta, double *par, double *x, double *sdiag, double *wa1, double *wa2);
 
 void lmdif(lmdif_fcn_ptr fcn, const int m, const int n, double *x, double *fvec, const double ftol, const double xtol, const double gtol, const int maxfev,
            const double epsfcn, double *diag, const int mode, const double factor, const int nprint, int *info, int *nfev,

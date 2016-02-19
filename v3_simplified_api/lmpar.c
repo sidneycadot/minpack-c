@@ -3,7 +3,7 @@
 
 #include "minpack_c.h"
 
-void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double *diag, double *qtb, const double delta, double *par, double *x, double *sdiag, double *wa1, double *wa2)
+void lmpar(const int n, double *r, const int ldr, const int *ipvt, const double *diag, const double *qtb, const double delta, double *par, double *x, double *sdiag, double *wa1, double *wa2)
 {
     // Given an m by n matrix a, an n by n nonsingular diagonal
     // matrix d, an m-vector b, and a positive number delta,

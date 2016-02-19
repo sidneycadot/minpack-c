@@ -63,7 +63,7 @@ void qrsolv(
 void lmpar(
         const int n,
         double *r, const int ldr,
-        const int *ipvt, const double *diag, double *qtb,
+        const int *ipvt, const double *diag, const double *qtb,
         const double delta, double *par,
         double *x, double *sdiag, double *wa1, double *wa2);
 

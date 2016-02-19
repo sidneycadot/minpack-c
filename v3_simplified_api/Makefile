@@ -26,4 +26,3 @@ fdjac2.o : fdjac2.c minpack_c.h
 
 clean :
 	$(RM) *.o TestVF TestVF_Performance
-
